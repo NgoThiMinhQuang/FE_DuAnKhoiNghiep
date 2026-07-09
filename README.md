@@ -1,32 +1,59 @@
-# React + TypeScript + Vite
+# FE_DuAnKhoiNghiep
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend React + TypeScript cho dự án khởi nghiệp.
 
-Currently, two official plugins are available:
+## Yêu cầu
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20 trở lên
+- npm
 
-## React Compiler
+Kiểm tra phiên bản:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+node -v
+npm -v
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Clone project
+
+```bash
+git clone https://github.com/NgoThiMinhQuang/FE_DuAnKhoiNghiep.git
+cd FE_DuAnKhoiNghiep
+```
+
+## Cài thư viện
+
+```bash
+npm install
+```
+
+## Chạy project
+
+```bash
+npm run dev
+```
+
+Sau khi chạy, mở đường dẫn Vite hiển thị trên terminal, thường là:
+
+```text
+http://localhost:5173/
+```
+
+## Build production
+
+```bash
+npm run build
+```
+
+## Xem bản build
+
+```bash
+npm run preview
+```
+
+## Scripts
+
+- `npm run dev`: chạy môi trường development
+- `npm run build`: kiểm tra TypeScript và build production
+- `npm run preview`: xem thử bản production build
+- `npm run lint`: kiểm tra code bằng Oxlint
