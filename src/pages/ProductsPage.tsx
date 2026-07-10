@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { categories, formatPrice, products } from '../data/products'
+import type { Product } from '../data/products'
+import { getWishlistIds, toggleWishlistId } from '../utils/wishlist'
 import './ProductsPage.css'
 
 const promoCodes = [
@@ -30,11 +32,49 @@ const promoCodes = [
   },
 ]
 
+const productGalleries: Record<string, string[]> = {
+  '1': [
+    '/images/products/combo-3mon6.jpg',
+    '/images/products/combo-3mon.jpg',
+    '/images/products/combo-3mon2.png',
+    '/images/products/combo-3mon3.png',
+  ],
+  '2': [
+    '/images/products/sua-rua-mat-tao-bot3.jpg',
+    '/images/products/sua-rua-mat-tao-bot1.png',
+    '/images/products/sua-rua-mat-tao-bot2.png',
+    '/images/products/sua-rua-mat-tao-bot4.png',
+  ],
+  '3': [
+    '/images/products/mat-na-tay-te-bao-chet6.jpg',
+    '/images/products/mat-na-tay-te-bao-chet1.jpg',
+    '/images/products/mat-na-tay-te-bao-chet2.jpg',
+    '/images/products/mat-na-tay-te-bao-chet4.png',
+  ],
+  '4': [
+    '/images/products/toner-duong-da4.jpg',
+    '/images/products/toner-duong-da1.png',
+    '/images/products/toner-duong-da2.jpg',
+    '/images/products/toner-duong-da3.jpg',
+  ],
+  '5': [
+    '/images/products/combo-duong-da-mini4.png',
+    '/images/products/combo-duong-da-mini.png',
+    '/images/products/combo-duong-da-mini2.jpg',
+    '/images/products/combo-duong-da-mini3.jpg',
+  ],
+}
+
 function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeCategorySlug = searchParams.get('danh-muc') || 'tat-ca'
   const [sortBy, setSortBy] = useState('default')
   const [selectedPromo, setSelectedPromo] = useState<(typeof promoCodes)[number] | null>(null)
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
+  const [quickViewImage, setQuickViewImage] = useState('')
+  const [quickViewQuantity, setQuickViewQuantity] = useState(1)
+  const [wishlistIds, setWishlistIds] = useState(() => getWishlistIds())
+  const [wishlistToastOpen, setWishlistToastOpen] = useState(false)
 
   const activeCategory = categories.find((category) => category.slug === activeCategorySlug)
 
@@ -71,6 +111,37 @@ function ProductsPage() {
   }
 
   const closePromoModal = () => setSelectedPromo(null)
+
+  const openQuickView = (product: Product) => {
+    setQuickViewProduct(product)
+    setQuickViewImage(product.image)
+    setQuickViewQuantity(1)
+  }
+
+  const closeQuickView = () => setQuickViewProduct(null)
+
+  const quickViewGallery = quickViewProduct ? productGalleries[quickViewProduct.id] || [quickViewProduct.image] : []
+
+  useEffect(() => {
+    if (!wishlistToastOpen) return
+
+    const timerId = window.setTimeout(() => {
+      setWishlistToastOpen(false)
+    }, 4200)
+
+    return () => window.clearTimeout(timerId)
+  }, [wishlistToastOpen])
+
+  const handleToggleWishlist = (product: Product) => {
+    const alreadyFavorite = wishlistIds.includes(product.id)
+    const nextWishlistIds = toggleWishlistId(product.id)
+
+    setWishlistIds(nextWishlistIds)
+
+    if (!alreadyFavorite) {
+      setWishlistToastOpen(true)
+    }
+  }
 
   return (
     <div className="products-page">
@@ -163,30 +234,64 @@ function ProductsPage() {
 
           <div className="products-grid">
             {filteredProducts.map((product) => (
-              <Link key={product.id} to={`/san-pham/${product.slug}`} className="product-card">
+              <article key={product.id} className="product-card">
                 {product.discount && <span className="product-badge">- {product.discount}%</span>}
 
                 <div className="product-image">
-                  <img src={product.image} alt={product.name} loading="lazy" />
-                </div>
-
-                <div className="product-tags">
-                  {product.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="product-tag">
-                      {tag}
-                    </span>
-                  ))}
+                  <Link to={`/san-pham/${product.slug}`} className="product-image-link" aria-label={`Xem chi tiết ${product.name}`}>
+                    <img src={product.image} alt={product.name} loading="lazy" />
+                  </Link>
+                  <div className="product-hover-actions" aria-label="TÃ¹y chá»n sáº£n pháº©m">
+                    <Link to={`/san-pham/${product.slug}`} className="product-action" title="Xem chi tiết" aria-label="Xem chi tiết">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7h10" />
+                        <path d="M18 7h2" />
+                        <path d="M4 17h2" />
+                        <path d="M10 17h10" />
+                        <path d="M4 12h4" />
+                        <path d="M12 12h8" />
+                        <circle cx="16" cy="7" r="2" />
+                        <circle cx="8" cy="17" r="2" />
+                        <circle cx="10" cy="12" r="2" />
+                      </svg>
+                    </Link>
+                    <button
+                      type="button"
+                      className={`product-action${wishlistIds.includes(product.id) ? ' active' : ''}`}
+                      title={wishlistIds.includes(product.id) ? 'Bỏ khỏi yêu thích' : 'Thêm vào yêu thích'}
+                      aria-label={wishlistIds.includes(product.id) ? 'Bỏ khỏi yêu thích' : 'Thêm vào yêu thích'}
+                      onClick={() => handleToggleWishlist(product)}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className="product-action"
+                      title="Xem nhanh"
+                      aria-label="Xem nhanh"
+                      onClick={() => openQuickView(product)}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="product-info">
                   <p className="product-brand">RED BEAN BEAUTY</p>
-                  <h3 className="product-name">{product.name}</h3>
+                  <Link to={`/san-pham/${product.slug}`} className="product-name-link">
+                    <h3 className="product-name">{product.name}</h3>
+                  </Link>
                   <div className="product-pricing">
                     <span className="product-price">{formatPrice(product.price)}</span>
                     {product.originalPrice && <span className="product-original">{formatPrice(product.originalPrice)}</span>}
                   </div>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
 
@@ -232,6 +337,105 @@ function ProductsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {quickViewProduct && (
+        <div className="quick-view-overlay" role="presentation" onClick={closeQuickView}>
+          <div
+            className="quick-view-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quick-view-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button type="button" className="quick-view-close" aria-label="Đóng" onClick={closeQuickView}>
+              ×
+            </button>
+
+            <div className="quick-view-gallery">
+              <div className="quick-view-main-image">
+                <img src={quickViewImage || quickViewProduct.image} alt={quickViewProduct.name} />
+              </div>
+
+              <div className="quick-view-thumbs">
+                {quickViewGallery.map((image) => (
+                  <button
+                    type="button"
+                    className={`quick-view-thumb${image === (quickViewImage || quickViewProduct.image) ? ' active' : ''}`}
+                    key={image}
+                    onClick={() => setQuickViewImage(image)}
+                  >
+                    <img src={image} alt={quickViewProduct.name} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="quick-view-info">
+              <h2 id="quick-view-title">{quickViewProduct.name}</h2>
+              <div className="quick-view-meta">
+                <span>
+                  Thương hiệu: <strong>Red Bean Beauty</strong>
+                </span>
+                <span className="quick-view-divider">|</span>
+                <span>Mã sản phẩm: RBB-{quickViewProduct.id.padStart(3, '0')}</span>
+              </div>
+
+              <div className="quick-view-price">
+                <strong>{formatPrice(quickViewProduct.price)}</strong>
+                {quickViewProduct.originalPrice && <span>{formatPrice(quickViewProduct.originalPrice)}</span>}
+              </div>
+
+              <div className="quick-view-options">
+                <p>Phân loại:</p>
+                <div className="quick-view-option-list">
+                  {quickViewProduct.tags.slice(0, 2).map((tag, index) => (
+                    <button type="button" className={index === 0 ? 'active' : ''} key={tag}>
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="quick-view-desc">{quickViewProduct.description}</p>
+
+              <div className="quick-view-buy">
+                <div className="quick-view-qty" aria-label="Số lượng">
+                  <button type="button" onClick={() => setQuickViewQuantity((quantity) => Math.max(1, quantity - 1))}>
+                    -
+                  </button>
+                  <span>{quickViewQuantity}</span>
+                  <button type="button" onClick={() => setQuickViewQuantity((quantity) => quantity + 1)}>
+                    +
+                  </button>
+                </div>
+                <button type="button" className="quick-view-add">
+                  Thêm vào giỏ hàng
+                </button>
+              </div>
+
+              <Link to={`/san-pham/${quickViewProduct.slug}`} className="quick-view-detail" onClick={closeQuickView}>
+                Xem chi tiết sản phẩm
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wishlistToastOpen && (
+        <div className="wishlist-toast" role="status" aria-live="polite">
+          <button type="button" className="wishlist-toast-close" aria-label="Đóng thông báo" onClick={() => setWishlistToastOpen(false)}>
+            ×
+          </button>
+          <strong>Tuyệt vời</strong>
+          <p>
+            Bạn vừa thêm 1 sản phẩm vào mục yêu thích thành công bấm{' '}
+            <Link to="/yeu-thich" onClick={() => setWishlistToastOpen(false)}>
+              vào đây
+            </Link>{' '}
+            để tới trang yêu thích
+          </p>
         </div>
       )}
     </div>

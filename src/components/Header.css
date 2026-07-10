@@ -211,6 +211,7 @@
   color: #B53740;
   background: transparent;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .wishlist-button {

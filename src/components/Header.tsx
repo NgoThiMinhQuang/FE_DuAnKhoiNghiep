@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { categories } from '../data/products'
+import { getWishlistIds } from '../utils/wishlist'
 import './Header.css'
 
 const menuItems = [
@@ -14,6 +15,23 @@ const menuItems = [
 function Header() {
   const location = useLocation()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [wishlistCount, setWishlistCount] = useState(() => getWishlistIds().length)
+
+  useEffect(() => {
+    const syncWishlistCount = () => setWishlistCount(getWishlistIds().length)
+    const handleWishlistUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<string[]>
+      setWishlistCount((customEvent.detail || getWishlistIds()).length)
+    }
+
+    window.addEventListener('storage', syncWishlistCount)
+    window.addEventListener('wishlist-updated', handleWishlistUpdated)
+
+    return () => {
+      window.removeEventListener('storage', syncWishlistCount)
+      window.removeEventListener('wishlist-updated', handleWishlistUpdated)
+    }
+  }, [])
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
@@ -83,12 +101,12 @@ function Header() {
             Tài khoản
           </Link>
 
-          <button className="icon-button wishlist-button" type="button" aria-label="Sản phẩm yêu thích">
-            <span className="count-badge">0</span>
+          <Link className="icon-button wishlist-button" to="/yeu-thich" aria-label="Sản phẩm yêu thích">
+            <span className="count-badge">{wishlistCount}</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z" />
             </svg>
-          </button>
+          </Link>
 
           <button className="cart-button" type="button">
             <span className="count-badge">0</span>
