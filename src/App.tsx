@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage'
 import ProductsPage from './pages/ProductsPage'
 import WishlistPage from './pages/WishlistPage'
 import CartPage from './pages/CartPage'
+import ContactPage from './pages/ContactPage'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/san-pham" element={<ProductsPage />} />
         <Route path="/yeu-thich" element={<WishlistPage />} />
         <Route path="/gio-hang" element={<CartPage />} />
+        <Route path="/lien-he" element={<ContactPage />} />
       </Routes>
 
       <Footer />
