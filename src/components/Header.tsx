@@ -16,6 +16,7 @@ const menuItems = [
 function Header() {
   const location = useLocation()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(() => getWishlistIds().length)
   const [cartCount, setCartCount] = useState(() => getCartCount())
 
@@ -56,11 +57,33 @@ function Header() {
     return location.pathname.startsWith(path)
   }
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
+
   return (
     <header className="site-header">
       <div className="header-top-line" />
 
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-overlay" role="presentation" onClick={() => setMobileMenuOpen(false)} />
+      )}
+
       <div className="header-container header-main">
+        {/* Hamburger button — mobile only */}
+        <button
+          className="hamburger-btn"
+          type="button"
+          aria-label={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <span className={`hamburger-icon${mobileMenuOpen ? ' open' : ''}`}>
+            <span /><span /><span />
+          </span>
+        </button>
+
         <Link className="header-logo" to="/" aria-label="Red Bean Beauty">
           <svg className="logo-svg" viewBox="0 0 40 40" aria-hidden="true">
             <circle cx="20" cy="20" r="4" fill="#B53740" />
@@ -138,7 +161,20 @@ function Header() {
         </div>
       </div>
 
-      <nav className="header-nav" aria-label="Điều hướng chính">
+      <nav className={`header-nav${mobileMenuOpen ? ' mobile-open' : ''}`} aria-label="Điều hướng chính">
+        {/* Mobile nav header: Menu + close */}
+        <div className="mobile-nav-header">
+          <span className="mobile-nav-title">Menu</span>
+          <button
+            type="button"
+            className="mobile-nav-close"
+            aria-label="Đóng menu"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+
         <div className="header-container nav-container">
           <ul>
             {menuItems.map((item) => (
@@ -147,17 +183,27 @@ function Header() {
                 className={item.hasDropdown ? 'has-dropdown' : undefined}
                 onMouseEnter={() => item.hasDropdown && setDropdownOpen(true)}
                 onMouseLeave={() => item.hasDropdown && setDropdownOpen(false)}
-                onFocus={() => item.hasDropdown && setDropdownOpen(true)}
-                onBlur={(event) => {
-                  if (item.hasDropdown && !event.currentTarget.contains(event.relatedTarget)) {
-                    setDropdownOpen(false)
-                  }
-                }}
               >
-                <Link className={isActive(item.path) ? 'active' : undefined} to={item.path}>
-                  {item.label}
-                  {item.hasDropdown && <span className="nav-arrow" aria-hidden="true" />}
-                </Link>
+                {item.hasDropdown ? (
+                  <button
+                    type="button"
+                    className={`nav-link-btn${isActive(item.path) ? ' active' : ''}`}
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                  >
+                    {item.label}
+                    {/* Desktop: arrow, Mobile: +/- */}
+                    <span className="nav-arrow" aria-hidden="true" />
+                    <span className="nav-plus-minus" aria-hidden="true">{dropdownOpen ? '−' : '+'}</span>
+                  </button>
+                ) : (
+                  <Link
+                    className={isActive(item.path) ? 'active' : undefined}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                )}
 
                 {item.hasDropdown && (
                   <div className={`nav-dropdown${dropdownOpen ? ' open' : ''}`}>
@@ -169,7 +215,7 @@ function Header() {
                             key={cat.slug}
                             to={cat.slug === 'tat-ca' ? '/san-pham' : `/san-pham?danh-muc=${cat.slug}`}
                             className="dropdown-item"
-                            onClick={() => setDropdownOpen(false)}
+                            onClick={() => { setDropdownOpen(false); setMobileMenuOpen(false) }}
                           >
                             <span>{cat.name}</span>
                             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -185,10 +231,12 @@ function Header() {
             ))}
           </ul>
 
-          <Link className="flash-sale" to="/flash-sale">
-            <span aria-hidden="true">⚡</span>
-            Flash Sale
-          </Link>
+          {location.pathname === '/' && (
+            <Link className="flash-sale" to="/flash-sale" onClick={() => setMobileMenuOpen(false)}>
+              <span aria-hidden="true">⚡</span>
+              Flash Sale
+            </Link>
+          )}
         </div>
       </nav>
     </header>

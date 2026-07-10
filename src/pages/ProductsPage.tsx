@@ -70,6 +70,7 @@ function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeCategorySlug = searchParams.get('danh-muc') || 'tat-ca'
   const [sortBy, setSortBy] = useState('default')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [selectedPromo, setSelectedPromo] = useState<(typeof promoCodes)[number] | null>(null)
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
   const [quickViewImage, setQuickViewImage] = useState('')
@@ -177,8 +178,42 @@ function ProductsPage() {
         </div>
       </div>
 
+      {/* Mobile filter toggle */}
+      {!filterOpen && (
+        <div className="products-container mobile-filter-bar">
+          <button
+            type="button"
+            className="mobile-filter-btn"
+            onClick={() => setFilterOpen(true)}
+            aria-expanded={filterOpen}
+            aria-label="Mở bộ lọc"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Mobile filter overlay */}
+      {filterOpen && (
+        <div className="filter-overlay" role="presentation" onClick={() => setFilterOpen(false)} />
+      )}
+
       <div className="products-container products-layout">
-        <aside className="products-sidebar">
+        {/* Floating close button (slides in with sidebar) */}
+        <button 
+          type="button" 
+          className={`sidebar-floating-close${filterOpen ? ' sidebar-open' : ''}`}
+          onClick={() => setFilterOpen(false)} 
+          aria-label="Đóng bộ lọc"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" fill="none" strokeWidth="3" strokeLinecap="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        <aside className={`products-sidebar${filterOpen ? ' sidebar-open' : ''}`}>
           <div className="sidebar-section">
             <h3 className="sidebar-title">
               Loại sản phẩm
@@ -197,25 +232,6 @@ function ProductsPage() {
                     <span className="filter-check" />
                     {category.name}
                   </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="sidebar-section">
-            <h3 className="sidebar-title">
-              Thành phần chính
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </h3>
-            <ul className="sidebar-list">
-              {['Đậu đỏ', 'Cám gạo', 'Hoa cúc La Mã', 'Nước hoa hồng', 'Hyaluronic Acid', 'Niacinamide'].map((item) => (
-                <li key={item}>
-                  <label className="sidebar-filter">
-                    <span className="filter-check" />
-                    {item}
-                  </label>
                 </li>
               ))}
             </ul>
