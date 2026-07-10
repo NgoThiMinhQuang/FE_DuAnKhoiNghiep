@@ -9,10 +9,14 @@
 */
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 900;
   width: 100%;
   overflow-x: clip;
   background: #ffffff;
   color: #3A1215;
+  box-shadow: 0 2px 12px rgba(58, 18, 21, 0.08);
 }
 
 /* Top accent line */
