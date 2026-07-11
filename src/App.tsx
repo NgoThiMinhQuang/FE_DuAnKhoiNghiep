@@ -13,10 +13,14 @@ import AccountPage from './pages/AccountPage'
 import ShippingPolicyPage from './pages/ShippingPolicyPage'
 import ReturnPolicyPage from './pages/ReturnPolicyPage'
 import SalesPolicyPage from './pages/SalesPolicyPage'
+import CustomerAccountPage from './pages/CustomerAccountPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
+import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Header />
       <CartToast />
 
@@ -32,6 +36,8 @@ function App() {
         <Route path="/chinh-sach-giao-hang" element={<ShippingPolicyPage />} />
         <Route path="/chinh-sach-doi-tra" element={<ReturnPolicyPage />} />
         <Route path="/chinh-sach-ban-hang" element={<SalesPolicyPage />} />
+        <Route path="/tai-khoan/thong-tin" element={<CustomerAccountPage />} />
+        <Route path="/tai-khoan/doi-mat-khau" element={<ChangePasswordPage />} />
       </Routes>
 
       <Footer />

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { categories } from '../data/products'
 import { getCartCount, getCartItems } from '../utils/cart'
 import { getWishlistIds } from '../utils/wishlist'
+import { getCurrentUser, getUserDisplayName, getUserInitial, logoutDemo } from '../utils/auth'
 import './Header.css'
 
 const menuItems = [
@@ -15,11 +16,23 @@ const menuItems = [
 
 function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(() => getWishlistIds().length)
   const [cartCount, setCartCount] = useState(() => getCartCount())
+  const [authUser, setAuthUser] = useState(() => getCurrentUser())
+
+  useEffect(() => {
+    const syncAuth = () => setAuthUser(getCurrentUser())
+    window.addEventListener('storage', syncAuth)
+    window.addEventListener('auth-updated', syncAuth)
+    return () => {
+      window.removeEventListener('storage', syncAuth)
+      window.removeEventListener('auth-updated', syncAuth)
+    }
+  }, [])
 
   useEffect(() => {
     const syncWishlistCount = () => setWishlistCount(getWishlistIds().length)
@@ -56,6 +69,12 @@ function Header() {
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
     return location.pathname.startsWith(path)
+  }
+
+  const handleLogout = () => {
+    logoutDemo()
+    setAccountMenuOpen(false)
+    if (location.pathname.startsWith('/tai-khoan')) navigate('/tai-khoan?che-do=dang-nhap')
   }
 
   // Close mobile menu on route change
@@ -148,23 +167,52 @@ function Header() {
               aria-expanded={accountMenuOpen}
               onClick={() => setAccountMenuOpen((open) => !open)}
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 21a8 8 0 0 0-16 0" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              Tài khoản
+              {authUser ? (
+                <span className="header-user-avatar">
+                  {authUser.avatar ? <img src={authUser.avatar} alt="" /> : getUserInitial(authUser)}
+                </span>
+              ) : (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 21a8 8 0 0 0-16 0" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              )}
+              <span className="account-button-label">{authUser ? getUserDisplayName(authUser) : 'Tài khoản'}</span>
               <span className="account-chevron" aria-hidden="true" />
             </button>
 
             <div className="account-dropdown" role="menu">
-              <Link role="menuitem" to="/tai-khoan?che-do=dang-nhap" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" /></svg>
-                Đăng nhập
-              </Link>
-              <Link role="menuitem" to="/tai-khoan?che-do=dang-ky" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21a7 7 0 0 0-14 0M8 11a4 4 0 1 0 0-8M19 8v6M16 11h6" /></svg>
-                Đăng ký
-              </Link>
+              {authUser ? (
+                <>
+                  <div className="account-dropdown-user">
+                    <strong>{getUserDisplayName(authUser)}</strong>
+                    <small>{authUser.email}</small>
+                  </div>
+                  <Link role="menuitem" to="/tai-khoan/thong-tin" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8" /></svg>
+                    Thông tin tài khoản
+                  </Link>
+                  <Link role="menuitem" to="/tai-khoan/doi-mat-khau" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                    Đổi mật khẩu
+                  </Link>
+                  <button role="menuitem" type="button" onClick={handleLogout}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" /></svg>
+                    Đăng xuất
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link role="menuitem" to="/tai-khoan?che-do=dang-nhap" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" /></svg>
+                    Đăng nhập
+                  </Link>
+                  <Link role="menuitem" to="/tai-khoan?che-do=dang-ky" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21a7 7 0 0 0-14 0M8 11a4 4 0 1 0 0-8M19 8v6M16 11h6" /></svg>
+                    Đăng ký
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 

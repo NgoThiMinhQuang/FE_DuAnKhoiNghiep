@@ -1,0 +1,534 @@
+.customer-account-page {
+  min-height: calc(100vh - 200px);
+  padding: 34px 0 58px;
+  color: #3d3031;
+  background: #f8f5f5;
+}
+
+.customer-account-container {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.customer-account-layout {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.customer-sidebar,
+.customer-panel {
+  border: 1px solid #ecdfdf;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(72, 26, 31, 0.05);
+}
+
+.customer-sidebar {
+  position: sticky;
+  top: 170px;
+  overflow: hidden;
+}
+
+.customer-sidebar-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 20px;
+  border-bottom: 1px solid #eee4e5;
+  text-align: center;
+}
+
+.customer-sidebar-avatar,
+.profile-large-avatar,
+.header-user-avatar {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #b53740;
+  font-weight: 800;
+}
+
+.customer-sidebar-avatar {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.customer-sidebar-avatar img,
+.profile-large-avatar img,
+.header-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-sidebar-profile strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #3b2527;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-sidebar-profile small {
+  max-width: 100%;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #817576;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-sidebar nav {
+  display: grid;
+  padding: 8px;
+}
+
+.customer-sidebar nav a,
+.customer-sidebar nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 43px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 5px;
+  color: #5b4e4f;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.customer-sidebar nav a:hover,
+.customer-sidebar nav a.active,
+.customer-sidebar nav button:hover {
+  color: #b53740;
+  background: #fff1f2;
+}
+
+.customer-sidebar nav svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.customer-account-main {
+  display: grid;
+  gap: 22px;
+}
+
+.customer-panel {
+  padding: 25px 28px 28px;
+}
+
+.customer-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee4e5;
+}
+
+.customer-panel-heading p {
+  margin: 0 0 3px;
+  color: #b53740;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.customer-panel-heading h1,
+.customer-panel-heading h2 {
+  margin: 0;
+  color: #382224;
+  font-size: 22px;
+}
+
+.profile-editor {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 30px;
+}
+
+.profile-avatar-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-large-avatar {
+  width: 104px;
+  height: 104px;
+  margin-bottom: 13px;
+  font-size: 40px;
+  box-shadow: 0 8px 22px rgba(181, 55, 64, 0.18);
+}
+
+.avatar-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #dcb9bc;
+  border-radius: 999px;
+  color: #b53740;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.avatar-upload-button input {
+  display: none;
+}
+
+.profile-avatar-editor > button {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  color: #756869;
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.profile-avatar-editor small {
+  margin-top: 9px;
+  color: #928788;
+  font-size: 10px;
+}
+
+.profile-form,
+.address-form,
+.change-password-form {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.profile-form label > span,
+.address-form label > span,
+.change-password-form label > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #56494a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-form input,
+.address-form input:not([type='checkbox']),
+.address-form select,
+.change-password-form input:not([type='checkbox']) {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #dfd4d5;
+  border-radius: 7px;
+  color: #3d3031;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.profile-form input:focus,
+.address-form input:focus,
+.address-form select:focus,
+.change-password-form input:focus {
+  border-color: #b53740;
+  box-shadow: 0 0 0 3px rgba(181, 55, 64, 0.08);
+}
+
+.customer-primary-button,
+.add-address-button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #b53740;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.customer-primary-button {
+  justify-self: start;
+  min-width: 145px;
+  padding: 0 20px;
+}
+
+.customer-primary-button:hover,
+.add-address-button:hover {
+  background: #8e2b33;
+}
+
+.customer-primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.customer-success {
+  margin: 15px 0 0;
+  padding: 10px 13px;
+  border-radius: 6px;
+  color: #246743;
+  background: #eaf6ef;
+  font-size: 12px;
+}
+
+.customer-success.error {
+  color: #9e2932;
+  background: #fff0f1;
+}
+
+.add-address-button {
+  padding: 0 17px;
+  white-space: nowrap;
+}
+
+.address-form {
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid #eadbdd;
+  border-radius: 7px;
+  background: #fffafa;
+}
+
+.default-address-checkbox,
+.show-password-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #615455;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.default-address-checkbox span,
+.show-password-checkbox span {
+  margin: 0 !important;
+  font-weight: 500 !important;
+}
+
+.default-address-checkbox input,
+.show-password-checkbox input {
+  accent-color: #b53740;
+}
+
+.address-api-error {
+  color: #a22f38;
+  font-size: 12px;
+}
+
+.address-api-error button {
+  padding: 0;
+  border: 0;
+  color: #b53740;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.address-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  margin-top: 17px;
+}
+
+.customer-address-card {
+  padding: 16px;
+  border: 1px solid #e7dcdd;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.customer-address-card.default {
+  border-color: #d6868c;
+  background: #fffafa;
+}
+
+.address-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.address-card-title strong {
+  color: #402b2d;
+  font-size: 14px;
+}
+
+.address-card-title span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #b53740;
+  background: #fbe5e7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.customer-address-card p {
+  margin: 0 0 5px;
+  color: #6b5e5f;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.address-card-actions {
+  display: flex;
+  gap: 13px;
+  margin-top: 11px;
+}
+
+.address-card-actions button {
+  padding: 0;
+  border: 0;
+  color: #b53740;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.address-card-actions .delete-address {
+  color: #887c7d;
+}
+
+.address-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  min-height: 120px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #dfd1d2;
+  border-radius: 7px;
+  color: #8a7e7f;
+  background: #fdfbfb;
+}
+
+.address-empty svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: #c78086;
+  stroke-width: 1.6;
+}
+
+.address-empty p {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.change-password-panel {
+  max-width: 680px;
+}
+
+.change-password-description {
+  margin: -6px 0 20px;
+  color: #796d6e;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.change-password-form {
+  max-width: 500px;
+}
+
+@media (max-width: 900px) {
+  .customer-account-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-sidebar {
+    position: static;
+  }
+
+  .customer-sidebar-profile {
+    display: none;
+  }
+
+  .customer-sidebar nav {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .customer-sidebar nav a,
+  .customer-sidebar nav button {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-account-page {
+    padding: 24px 0 42px;
+  }
+
+  .customer-account-container {
+    width: min(100% - 24px, 1120px);
+  }
+
+  .customer-sidebar nav {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-sidebar nav a,
+  .customer-sidebar nav button {
+    justify-content: flex-start;
+  }
+
+  .customer-panel {
+    padding: 20px 17px 23px;
+  }
+
+  .customer-panel-heading {
+    align-items: flex-start;
+  }
+
+  .customer-panel-heading h1,
+  .customer-panel-heading h2 {
+    font-size: 20px;
+  }
+
+  .profile-editor,
+  .customer-form-row,
+  .address-list {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-editor {
+    gap: 22px;
+  }
+
+  .customer-primary-button {
+    width: 100%;
+  }
+}
