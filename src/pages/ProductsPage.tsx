@@ -77,6 +77,7 @@ function ProductsPage() {
   const [quickViewQuantity, setQuickViewQuantity] = useState(1)
   const [wishlistIds, setWishlistIds] = useState(() => getWishlistIds())
   const [wishlistToastOpen, setWishlistToastOpen] = useState(false)
+  const [copiedPromoCode, setCopiedPromoCode] = useState<string | null>(null)
 
   const activeCategory = categories.find((category) => category.slug === activeCategorySlug)
 
@@ -114,6 +115,37 @@ function ProductsPage() {
 
   const closePromoModal = () => setSelectedPromo(null)
 
+  const copyPromoCode = async (code: string) => {
+    try {
+      let copied = false
+
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(code)
+          copied = true
+        } catch {
+          copied = false
+        }
+      }
+
+      if (!copied) {
+        const textArea = document.createElement('textarea')
+        textArea.value = code
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        copied = document.execCommand('copy')
+        textArea.remove()
+      }
+
+      setCopiedPromoCode(copied ? code : null)
+    } catch {
+      setCopiedPromoCode(null)
+    }
+  }
+
   const openQuickView = (product: Product) => {
     setQuickViewProduct(product)
     setQuickViewImage(product.image)
@@ -133,6 +165,13 @@ function ProductsPage() {
 
     return () => window.clearTimeout(timerId)
   }, [wishlistToastOpen])
+
+  useEffect(() => {
+    if (!copiedPromoCode) return
+
+    const timerId = window.setTimeout(() => setCopiedPromoCode(null), 2500)
+    return () => window.clearTimeout(timerId)
+  }, [copiedPromoCode])
 
   const handleToggleWishlist = (product: Product) => {
     const alreadyFavorite = wishlistIds.includes(product.id)
@@ -166,8 +205,13 @@ function ProductsPage() {
               <strong>{promo.title}</strong>
               <p>{promo.description}</p>
               <div className="promo-actions">
-                <button type="button" className="promo-copy">
-                  Sao chép mã
+                <button
+                  type="button"
+                  className={`promo-copy${copiedPromoCode === promo.code ? ' copied' : ''}`}
+                  onClick={() => copyPromoCode(promo.code)}
+                  aria-label={`Sao chép mã ${promo.code}`}
+                >
+                  {copiedPromoCode === promo.code ? 'Đã sao chép' : 'Sao chép mã'}
                 </button>
                 <button type="button" className="promo-cond" onClick={() => setSelectedPromo(promo)}>
                   Điều kiện
@@ -353,8 +397,12 @@ function ProductsPage() {
               <button type="button" className="promo-modal-secondary" onClick={closePromoModal}>
                 Đóng
               </button>
-              <button type="button" className="promo-modal-primary">
-                Sao chép mã
+              <button
+                type="button"
+                className={`promo-modal-primary${copiedPromoCode === selectedPromo.code ? ' copied' : ''}`}
+                onClick={() => copyPromoCode(selectedPromo.code)}
+              >
+                {copiedPromoCode === selectedPromo.code ? 'Đã sao chép' : 'Sao chép mã'}
               </button>
             </div>
           </div>

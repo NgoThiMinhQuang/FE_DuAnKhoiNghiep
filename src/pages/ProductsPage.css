@@ -232,6 +232,13 @@
   background: #8E2B33;
 }
 
+.promo-copy.copied,
+.promo-copy.copied:hover,
+.promo-modal-primary.copied,
+.promo-modal-primary.copied:hover {
+  background: #237A4B;
+}
+
 /* ---- Layout: sidebar + main ---- */
 .products-layout {
   display: grid;
