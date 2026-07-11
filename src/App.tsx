@@ -12,6 +12,7 @@ import NewsDetailPage from './pages/NewsDetailPage'
 import AccountPage from './pages/AccountPage'
 import ShippingPolicyPage from './pages/ShippingPolicyPage'
 import ReturnPolicyPage from './pages/ReturnPolicyPage'
+import SalesPolicyPage from './pages/SalesPolicyPage'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/tai-khoan" element={<AccountPage />} />
         <Route path="/chinh-sach-giao-hang" element={<ShippingPolicyPage />} />
         <Route path="/chinh-sach-doi-tra" element={<ReturnPolicyPage />} />
+        <Route path="/chinh-sach-ban-hang" element={<SalesPolicyPage />} />
       </Routes>
 
       <Footer />

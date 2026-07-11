@@ -245,6 +245,112 @@
   line-height: 1.55;
 }
 
+.order-method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.order-method-card {
+  padding: 17px 15px;
+  border: 1px solid #eadbdd;
+  border-radius: 7px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.order-method-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #b53740;
+}
+
+.order-method-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.order-method-card h3 {
+  margin: 0 0 6px;
+  color: #493234;
+  font-size: 14px;
+}
+
+.order-method-card p {
+  margin: 0;
+  color: #706465;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.order-method-card a,
+.sales-promotion-link a {
+  color: #b53740;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sales-confirmation-process {
+  margin-top: 14px;
+}
+
+.sales-information-note {
+  margin-top: 14px;
+}
+
+.sales-promotion-box {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 15px;
+  align-items: center;
+  padding: 17px 19px;
+  border: 1px solid #eadbdd;
+  border-radius: 7px;
+  background: #fffafa;
+}
+
+.sales-promotion-box > div {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: #b53740;
+  background: #f9e4e6;
+}
+
+.sales-promotion-box svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sales-promotion-box p,
+.sales-promotion-link {
+  margin: 0;
+  color: #5f5354;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.sales-promotion-link {
+  margin-top: 11px;
+}
+
 .shipping-fee-box {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
@@ -361,6 +467,10 @@
   .policy-contact-card {
     position: static;
   }
+
+  .order-method-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 600px) {
@@ -379,7 +489,12 @@
 
   .delivery-time-grid,
   .shipping-fee-box,
-  .return-process {
+  .return-process,
+  .order-method-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-promotion-box {
     grid-template-columns: 1fr;
   }
 
