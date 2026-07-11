@@ -16,6 +16,7 @@ import SalesPolicyPage from './pages/SalesPolicyPage'
 import CustomerAccountPage from './pages/CustomerAccountPage'
 import ChangePasswordPage from './pages/ChangePasswordPage'
 import ScrollToTop from './components/ScrollToTop'
+import ProductDetailPage from './pages/ProductDetailPage'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/san-pham" element={<ProductsPage />} />
+        <Route path="/san-pham/:slug" element={<ProductDetailPage />} />
         <Route path="/yeu-thich" element={<WishlistPage />} />
         <Route path="/gio-hang" element={<CartPage />} />
         <Route path="/lien-he" element={<ContactPage />} />
