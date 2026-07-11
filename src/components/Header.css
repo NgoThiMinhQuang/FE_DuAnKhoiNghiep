@@ -196,6 +196,8 @@
   font-size: 14px;
   text-decoration: none;
   white-space: nowrap;
+  background: #ffffff;
+  cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
@@ -207,6 +209,108 @@
 .account-button svg {
   width: 20px;
   height: 20px;
+}
+
+.account-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.account-chevron {
+  width: 7px;
+  height: 7px;
+  margin: -3px 0 0 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.account-menu.open .account-chevron,
+.account-menu:hover .account-chevron {
+  margin-top: 3px;
+  transform: rotate(225deg);
+}
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  z-index: 1100;
+  width: 168px;
+  padding: 7px;
+  border: 1px solid #ead9da;
+  border-radius: 7px;
+  visibility: hidden;
+  opacity: 0;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(74, 25, 30, 0.16);
+  transform: translateY(-6px);
+  transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+  pointer-events: none;
+}
+
+.account-dropdown::before {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  left: 0;
+  height: 10px;
+  content: '';
+}
+
+.account-dropdown::after {
+  position: absolute;
+  top: -6px;
+  right: 25px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid #ead9da;
+  border-left: 1px solid #ead9da;
+  background: #ffffff;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.account-menu:hover .account-dropdown,
+.account-menu:focus-within .account-dropdown,
+.account-menu.open .account-dropdown {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.account-dropdown a {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 39px;
+  padding: 0 11px;
+  border-radius: 5px;
+  color: #3f3031;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+}
+
+.account-dropdown a:hover {
+  color: #b53740;
+  background: #fff1f2;
+}
+
+.account-dropdown a svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .icon-button,
@@ -619,6 +723,15 @@
   .account-button svg {
     width: 22px;
     height: 22px;
+  }
+
+  .account-chevron {
+    display: none;
+  }
+
+  .account-dropdown {
+    top: calc(100% + 7px);
+    right: -46px;
   }
 
   /* Hide "Tài khoản" text */

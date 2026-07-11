@@ -16,6 +16,7 @@ const menuItems = [
 function Header() {
   const location = useLocation()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(() => getWishlistIds().length)
   const [cartCount, setCartCount] = useState(() => getCartCount())
@@ -60,6 +61,7 @@ function Header() {
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false)
+    setAccountMenuOpen(false)
   }, [location.pathname])
 
   return (
@@ -134,13 +136,37 @@ function Header() {
         </div>
 
         <div className="header-actions">
-          <Link className="account-button" to="/tai-khoan">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 21a8 8 0 0 0-16 0" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Tài khoản
-          </Link>
+          <div
+            className={`account-menu${accountMenuOpen ? ' open' : ''}`}
+            onMouseEnter={() => setAccountMenuOpen(true)}
+            onMouseLeave={() => setAccountMenuOpen(false)}
+          >
+            <button
+              className="account-button"
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={accountMenuOpen}
+              onClick={() => setAccountMenuOpen((open) => !open)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Tài khoản
+              <span className="account-chevron" aria-hidden="true" />
+            </button>
+
+            <div className="account-dropdown" role="menu">
+              <Link role="menuitem" to="/tai-khoan?che-do=dang-nhap" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" /></svg>
+                Đăng nhập
+              </Link>
+              <Link role="menuitem" to="/tai-khoan?che-do=dang-ky" onClick={(event) => { event.currentTarget.blur(); setAccountMenuOpen(false) }}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21a7 7 0 0 0-14 0M8 11a4 4 0 1 0 0-8M19 8v6M16 11h6" /></svg>
+                Đăng ký
+              </Link>
+            </div>
+          </div>
 
           <Link className="icon-button wishlist-button" to="/yeu-thich" aria-label="Sản phẩm yêu thích">
             <span className="count-badge">{wishlistCount}</span>

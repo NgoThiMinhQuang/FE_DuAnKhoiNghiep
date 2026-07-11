@@ -9,6 +9,7 @@ import CartPage from './pages/CartPage'
 import ContactPage from './pages/ContactPage'
 import NewsPage from './pages/NewsPage'
 import NewsDetailPage from './pages/NewsDetailPage'
+import AccountPage from './pages/AccountPage'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/lien-he" element={<ContactPage />} />
         <Route path="/tin-tuc" element={<NewsPage />} />
         <Route path="/tin-tuc/:id" element={<NewsDetailPage />} />
+        <Route path="/tai-khoan" element={<AccountPage />} />
       </Routes>
 
       <Footer />
