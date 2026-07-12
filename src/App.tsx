@@ -15,8 +15,11 @@ import ReturnPolicyPage from './pages/ReturnPolicyPage'
 import SalesPolicyPage from './pages/SalesPolicyPage'
 import CustomerAccountPage from './pages/CustomerAccountPage'
 import ChangePasswordPage from './pages/ChangePasswordPage'
+import CustomerOrdersPage from './pages/CustomerOrdersPage'
+import CheckoutPage from './pages/CheckoutPage'
 import ScrollToTop from './components/ScrollToTop'
 import ProductDetailPage from './pages/ProductDetailPage'
+import AboutPage from './pages/AboutPage'
 
 function App() {
   return (
@@ -27,6 +30,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/gioi-thieu" element={<AboutPage />} />
         <Route path="/san-pham" element={<ProductsPage />} />
         <Route path="/san-pham/:slug" element={<ProductDetailPage />} />
         <Route path="/yeu-thich" element={<WishlistPage />} />
@@ -40,6 +44,8 @@ function App() {
         <Route path="/chinh-sach-ban-hang" element={<SalesPolicyPage />} />
         <Route path="/tai-khoan/thong-tin" element={<CustomerAccountPage />} />
         <Route path="/tai-khoan/doi-mat-khau" element={<ChangePasswordPage />} />
+        <Route path="/tai-khoan/don-hang" element={<CustomerOrdersPage />} />
+        <Route path="/thanh-toan" element={<CheckoutPage />} />
       </Routes>
 
       <Footer />
