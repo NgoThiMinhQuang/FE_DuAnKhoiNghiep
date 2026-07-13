@@ -21,6 +21,7 @@ import ScrollToTop from './components/ScrollToTop'
 import ProductDetailPage from './pages/ProductDetailPage'
 import AboutPage from './pages/AboutPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminProductsPage from './pages/AdminProductsPage'
 
 function AppContent() {
   const location = useLocation()
@@ -52,6 +53,7 @@ function AppContent() {
         <Route path="/thanh-toan" element={<CheckoutPage />} />
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/san-pham" element={<AdminProductsPage />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}
