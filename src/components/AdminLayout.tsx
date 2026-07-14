@@ -79,7 +79,7 @@ export const AdminIcon = ({ name, ...props }: AdminIconProps) => {
   )
 }
 
-type AdminSection = 'dashboard' | 'orders' | 'products' | 'accounts' | 'promotions'
+type AdminSection = 'dashboard' | 'orders' | 'products' | 'inventory' | 'accounts' | 'promotions'
 
 interface AdminLayoutProps {
   activeItem: AdminSection
@@ -93,6 +93,7 @@ const navItems: Array<{ label: string; icon: AdminIconName; section?: AdminSecti
   { label: 'Tổng quan', icon: 'dashboard', section: 'dashboard', to: '/admin' },
   { label: 'Đơn hàng', icon: 'orders', section: 'orders', to: '/admin/don-hang', count: 12 },
   { label: 'Sản phẩm', icon: 'products', section: 'products', to: '/admin/san-pham' },
+  { label: 'Kho hàng', icon: 'box', section: 'inventory', to: '/admin/kho' },
   { label: 'Tài khoản', icon: 'customers', section: 'accounts', to: '/admin/tai-khoan' },
   { label: 'Khuyến mãi', icon: 'discount', section: 'promotions', to: '/admin/khuyen-mai' },
   { label: 'Bài viết', icon: 'news' },
