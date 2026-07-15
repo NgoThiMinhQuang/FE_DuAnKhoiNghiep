@@ -1,5 +1,6 @@
 import { useState, type ReactNode, type SVGProps } from 'react'
 import { Link } from 'react-router-dom'
+import { useStoreSettings } from '../utils/storeSettings'
 import '../pages/admin/AdminDashboardPage.css'
 
 export type AdminIconName =
@@ -7,6 +8,8 @@ export type AdminIconName =
   | 'dashboard'
   | 'orders'
   | 'products'
+  | 'folder'
+  | 'star'
   | 'customers'
   | 'discount'
   | 'news'
@@ -44,6 +47,8 @@ export const AdminIcon = ({ name, ...props }: AdminIconProps) => {
     dashboard: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
     orders: <><path d="M6 2h12l3 5v14H3V7l3-5Z" /><path d="M3 7h18M8 11v1a4 4 0 0 0 8 0v-1" /></>,
     products: <><path d="m12 2 9 5-9 5-9-5 9-5Z" /><path d="m3 7 9 5 9-5M3 12l9 5 9-5M3 17l9 5 9-5" /></>,
+    folder: <><path d="M3 6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /><path d="M3 10h18" /></>,
+    star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />,
     customers: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
     discount: <><path d="M20.6 13.6 11 3H4a1 1 0 0 0-1 1v7l9.6 9.6a2 2 0 0 0 2.8 0l5.2-5.2a2 2 0 0 0 0-2.8Z" /><circle cx="7.5" cy="7.5" r="1" /></>,
     news: <><path d="M4 22h16a2 2 0 0 0 2-2V6H8v14a2 2 0 0 1-4 0V4h4" /><path d="M12 10h6M12 14h6M12 18h4" /></>,
@@ -79,7 +84,7 @@ export const AdminIcon = ({ name, ...props }: AdminIconProps) => {
   )
 }
 
-type AdminSection = 'dashboard' | 'orders' | 'products' | 'inventory' | 'accounts' | 'promotions'
+type AdminSection = 'dashboard' | 'orders' | 'products' | 'categories' | 'inventory' | 'accounts' | 'promotions' | 'articles' | 'reviews' | 'settings'
 
 interface AdminLayoutProps {
   activeItem: AdminSection
@@ -93,10 +98,12 @@ const navItems: Array<{ label: string; icon: AdminIconName; section?: AdminSecti
   { label: 'Tổng quan', icon: 'dashboard', section: 'dashboard', to: '/admin' },
   { label: 'Đơn hàng', icon: 'orders', section: 'orders', to: '/admin/don-hang', count: 12 },
   { label: 'Sản phẩm', icon: 'products', section: 'products', to: '/admin/san-pham' },
+  { label: 'Danh mục', icon: 'folder', section: 'categories', to: '/admin/danh-muc' },
   { label: 'Kho hàng', icon: 'box', section: 'inventory', to: '/admin/kho' },
   { label: 'Tài khoản', icon: 'customers', section: 'accounts', to: '/admin/tai-khoan' },
   { label: 'Khuyến mãi', icon: 'discount', section: 'promotions', to: '/admin/khuyen-mai' },
-  { label: 'Bài viết', icon: 'news' },
+  { label: 'Bài viết', icon: 'news', section: 'articles', to: '/admin/bai-viet' },
+  { label: 'Đánh giá', icon: 'star', section: 'reviews', to: '/admin/danh-gia' },
 ]
 
 function AdminLayout({
@@ -107,6 +114,7 @@ function AdminLayout({
   searchPlaceholder = 'Tìm kiếm đơn hàng, sản phẩm...',
 }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const storeSettings = useStoreSettings()
 
   const renderNavItem = (item: (typeof navItems)[number]) => {
     const className = `admin-nav-item${item.section === activeItem ? ' is-active' : ''}`
@@ -140,7 +148,7 @@ function AdminLayout({
 
       <aside className={`admin-sidebar${isSidebarOpen ? ' is-open' : ''}`}>
         <div className="admin-brand">
-          <img src="/images/logo1.png" alt="Rubeanora" className="admin-brand-logo" />
+          <img src={storeSettings.logo || '/images/logo1.png'} alt={storeSettings.storeName} className="admin-brand-logo" />
           <span className="admin-brand-admin">ADMIN CENTER</span>
           <button type="button" className="admin-sidebar-close" onClick={() => setIsSidebarOpen(false)} aria-label="Đóng menu">
             <AdminIcon name="close" />
@@ -152,7 +160,7 @@ function AdminLayout({
           {navItems.map(renderNavItem)}
           <p className="admin-nav-title admin-nav-title-spaced">HỆ THỐNG</p>
           <button type="button" className="admin-nav-item"><AdminIcon name="report" /><span>Báo cáo</span></button>
-          <button type="button" className="admin-nav-item"><AdminIcon name="settings" /><span>Cài đặt</span></button>
+          <Link to="/admin/cai-dat" className={`admin-nav-item${activeItem === 'settings' ? ' is-active' : ''}`} onClick={() => setIsSidebarOpen(false)}><AdminIcon name="settings" /><span>Cài đặt</span></Link>
         </nav>
 
         <div className="admin-sidebar-profile">

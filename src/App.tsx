@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import CartToast from './components/CartToast'
 import Header from './components/Header'
@@ -26,10 +27,20 @@ import AdminAccountsPage from './pages/admin/AdminAccountsPage'
 import AdminPromotionsPage from './pages/admin/AdminPromotionsPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminInventoryPage from './pages/admin/AdminInventoryPage'
+import AdminArticlesPage from './pages/admin/AdminArticlesPage'
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
+import AdminReviewsPage from './pages/admin/AdminReviewsPage'
+import AdminSettingsPage from './pages/admin/AdminSettingsPage'
+import { useStoreSettings } from './utils/storeSettings'
 
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
+  const storeSettings = useStoreSettings()
+
+  useEffect(() => {
+    document.title = isAdminRoute ? `Quản trị | ${storeSettings.storeName}` : storeSettings.storeName
+  }, [isAdminRoute, storeSettings.storeName])
 
   return (
     <>
@@ -58,10 +69,14 @@ function AppContent() {
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/san-pham" element={<AdminProductsPage />} />
+        <Route path="/admin/danh-muc" element={<AdminCategoriesPage />} />
         <Route path="/admin/tai-khoan" element={<AdminAccountsPage />} />
         <Route path="/admin/khuyen-mai" element={<AdminPromotionsPage />} />
         <Route path="/admin/don-hang" element={<AdminOrdersPage />} />
         <Route path="/admin/kho" element={<AdminInventoryPage />} />
+        <Route path="/admin/bai-viet" element={<AdminArticlesPage />} />
+        <Route path="/admin/danh-gia" element={<AdminReviewsPage />} />
+        <Route path="/admin/cai-dat" element={<AdminSettingsPage />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}
