@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
-import { products, type Product } from '../../data/products'
 import { usePagination } from '../../hooks/usePagination'
+import { useCatalog } from '../../hooks/useCatalog'
 import {
-  getReviews,
   type ProductReview,
   type ReviewModerationStatus,
 } from '../../utils/reviews'
@@ -25,16 +24,6 @@ const statusMeta: Record<ReviewModerationStatus, { label: string; tone: string }
   approved: { label: 'Đã hiển thị', tone: 'approved' },
   hidden: { label: 'Đã ẩn', tone: 'hidden' },
 }
-
-const buildInitialReviews = (): ManagedReview[] => {
-  return getReviews().map((review) => ({
-    ...review,
-    status: review.status ?? 'pending',
-    verifiedPurchase: review.verifiedPurchase ?? true,
-  }))
-}
-
-const getProduct = (productId: string): Product | undefined => products.find((product) => product.id === productId)
 
 const formatDateTime = (value: string) => new Intl.DateTimeFormat('vi-VN', {
   day: '2-digit',
@@ -57,7 +46,8 @@ function RatingStars({ rating }: { rating: number }) {
 }
 
 function AdminReviewsPage() {
-  const [reviews, setReviews] = useState<ManagedReview[]>(buildInitialReviews)
+  const { products } = useCatalog()
+  const [reviews, setReviews] = useState<ManagedReview[]>([])
   const [searchValue, setSearchValue] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | ReviewModerationStatus>('all')
   const [ratingFilter, setRatingFilter] = useState<'all' | '1' | '2' | '3' | '4' | '5'>('all')
@@ -72,7 +62,7 @@ function AdminReviewsPage() {
   const loadReviews = async () => {
     try {
       const data = await api.get<{ items: Array<Record<string, any>> }>('/admin/reviews?limit=100')
-      if (data.items.length) setReviews(data.items.map((item) => ({
+      setReviews(data.items.map((item) => ({
         id: String(item.id), orderId: '', productId: String(item.productId), userId: String(item.userId),
         userName: String(item.userName), rating: Number(item.rating), comment: String(item.content || ''),
         createdAt: String(item.createdAt),
@@ -80,7 +70,7 @@ function AdminReviewsPage() {
         reply: item.reply || undefined, verifiedPurchase: true,
       })))
     } catch {
-      // Giữ dữ liệu dự phòng.
+      setReviews([])
     }
   }
 
@@ -108,6 +98,8 @@ function AdminReviewsPage() {
     }
   }, [deletingReview, selectedReview])
 
+  const getProduct = useCallback((productId: string) => products.find((product) => product.id === productId), [products])
+
   const filteredReviews = useMemo(() => {
     const keyword = searchValue.trim().toLocaleLowerCase('vi-VN')
     const result = reviews.filter((review) => {
@@ -126,7 +118,7 @@ function AdminReviewsPage() {
       if (sortBy === 'lowest') return first.rating - second.rating
       return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
     })
-  }, [productFilter, ratingFilter, reviews, searchValue, sortBy, statusFilter])
+  }, [getProduct, productFilter, ratingFilter, reviews, searchValue, sortBy, statusFilter])
 
   const { currentPage, totalPages, pageItems: paginatedReviews, setCurrentPage } = usePagination(
     filteredReviews,

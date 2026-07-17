@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Pagination from '../components/Pagination'
-import { newsArticles } from '../data/news'
 import type { NewsArticle } from '../data/news'
 import { usePagination } from '../hooks/usePagination'
 import { api } from '../services/api'
@@ -26,7 +25,7 @@ function CalendarIcon() {
 }
 
 function NewsPage() {
-  const [articles, setArticles] = useState<NewsArticle[]>(newsArticles)
+  const [articles, setArticles] = useState<NewsArticle[]>([])
   const [contentState, setContentState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [loadVersion, setLoadVersion] = useState(0)
   const { currentPage, totalPages, pageItems, setCurrentPage } = usePagination(articles, 3)
@@ -34,13 +33,13 @@ function NewsPage() {
   useEffect(() => {
     setContentState('loading')
     let active = true
-    api.get<Array<Partial<NewsArticle> & Pick<NewsArticle, 'id' | 'title' | 'excerpt' | 'image' | 'date'>>>('/news')
-      .then((rows) => {
+    api.get<{ articles: Array<Partial<NewsArticle> & Pick<NewsArticle, 'id' | 'title' | 'excerpt' | 'image' | 'date'>> }>('/news')
+      .then((data) => {
         if (!active) return
-        if (rows.length) setArticles(rows.map((item) => ({ ...item, lead: '', body: [] })))
+        setArticles(data.articles.map((item) => ({ ...item, lead: '', body: [] })))
         setContentState('ready')
       })
-      .catch(() => active && setContentState(newsArticles.length ? 'ready' : 'error'))
+      .catch(() => active && setContentState('error'))
     return () => { active = false }
   }, [loadVersion])
 
@@ -80,7 +79,7 @@ function NewsPage() {
                 <p className="news-excerpt">{article.excerpt}</p>
 
                 <div className="news-meta">
-                  <span><UserIcon />Red Bean Beauty</span>
+                  <span><UserIcon />{article.author || 'Rubeanora'}</span>
                   <span><CalendarIcon />{article.date}</span>
                 </div>
               </div>

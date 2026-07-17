@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
-import { categories, formatPrice, products, type Product } from '../../data/products'
+import { formatPrice, type Product } from '../../data/products'
 import { usePagination } from '../../hooks/usePagination'
 import { api } from '../../services/api'
 import './AdminProductsPage.css'
@@ -48,29 +48,12 @@ interface ProductFormState {
   isCombo: boolean
 }
 
-const stockByProductId: Record<string, number> = {
-  '1': 18,
-  '2': 42,
-  '3': 9,
-  '4': 31,
-  '5': 6,
-  '6': 24,
-  '7': 0,
-  '8': 15,
-}
-
-const managedProducts: ManagedProduct[] = products.map((product) => ({
-  ...product,
-  sku: `RBN-${product.id.padStart(3, '0')}`,
-  stock: stockByProductId[product.id] ?? 0,
-}))
-
-const productCategories = categories.filter((category) => category.slug !== 'tat-ca')
+const initialProducts: ManagedProduct[] = []
 
 const emptyForm: ProductFormState = {
   name: '',
   nameEn: '',
-  categorySlug: productCategories[0]?.slug ?? '',
+  categorySlug: '',
   image: '',
   price: '',
   originalPrice: '',
@@ -105,7 +88,7 @@ const makeSlug = (value: string) => value
   .replace(/^-|-$/g, '')
 
 function AdminProductsPage() {
-  const [productList, setProductList] = useState<ManagedProduct[]>(managedProducts)
+  const [productList, setProductList] = useState<ManagedProduct[]>(initialProducts)
   const [apiCategories, setApiCategories] = useState<AdminCategoryRow[]>([])
   const [searchValue, setSearchValue] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -117,7 +100,7 @@ function AdminProductsPage() {
   const [toast, setToast] = useState('')
   const [selectedImageName, setSelectedImageName] = useState('')
   const imageFileInputRef = useRef<HTMLInputElement>(null)
-  const availableCategories = apiCategories.length ? apiCategories : productCategories
+  const availableCategories = apiCategories
 
   const loadAdminProducts = async () => {
     try {
@@ -125,12 +108,10 @@ function AdminProductsPage() {
         api.get<AdminProductRow[]>('/admin/products'),
         api.get<AdminCategoryRow[]>('/admin/categories'),
       ])
-      if (productRows.length) {
-        setProductList(productRows.map((item) => ({
+      setProductList(productRows.map((item) => ({
           ...mapAdminProduct(item),
           categorySlug: categoryRows.find((category) => category.id === item.categoryId)?.slug || '',
         })))
-      }
       setApiCategories(categoryRows)
     } catch {
       // Giữ dữ liệu giao diện dự phòng khi chưa đăng nhập admin hoặc DB chưa có dữ liệu.

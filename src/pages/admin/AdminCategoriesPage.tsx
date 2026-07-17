@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
-import { categories, products } from '../../data/products'
 import { usePagination } from '../../hooks/usePagination'
 import { api } from '../../services/api'
 import './AdminCategoriesPage.css'
@@ -30,25 +29,7 @@ interface CategoryFormState {
   displayOrder: string
 }
 
-const categoryDescriptions: Record<string, string> = {
-  'sua-rua-mat': 'Các sản phẩm làm sạch dịu nhẹ, hỗ trợ loại bỏ bụi bẩn và bã nhờn trên da.',
-  'mat-na': 'Mặt nạ đậu đỏ giúp làm sạch tế bào chết, dưỡng ẩm và hỗ trợ làm sáng da.',
-  toner: 'Sản phẩm cân bằng, làm dịu và bổ sung độ ẩm cho làn da sau bước làm sạch.',
-  combo: 'Bộ sản phẩm chăm sóc da kết hợp nhiều bước, phù hợp dùng hằng ngày hoặc làm quà tặng.',
-}
-
-const seedCategories: ManagedCategory[] = categories
-  .filter((category) => category.slug !== 'tat-ca')
-  .map((category, index) => ({
-    id: `category-${index + 1}`,
-    name: category.name,
-    slug: category.slug,
-    description: categoryDescriptions[category.slug] ?? '',
-    image: products.find((product) => product.categorySlug === category.slug)?.image ?? '',
-    status: 'active',
-    displayOrder: index + 1,
-    createdAt: `2026-01-${String(index + 8).padStart(2, '0')}T08:00:00.000Z`,
-  }))
+const initialCategories: ManagedCategory[] = []
 
 const emptyForm: CategoryFormState = {
   name: '',
@@ -56,7 +37,7 @@ const emptyForm: CategoryFormState = {
   description: '',
   image: '',
   status: 'active',
-  displayOrder: String(seedCategories.length + 1),
+  displayOrder: String(initialCategories.length + 1),
 }
 
 const makeSlug = (value: string) => value
@@ -75,7 +56,7 @@ const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', {
 }).format(new Date(value))
 
 function AdminCategoriesPage() {
-  const [categoryList, setCategoryList] = useState<ManagedCategory[]>(seedCategories)
+  const [categoryList, setCategoryList] = useState<ManagedCategory[]>(initialCategories)
   const [searchValue, setSearchValue] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | CategoryStatus>('all')
   const [sortBy, setSortBy] = useState<CategorySort>('order')
@@ -88,8 +69,7 @@ function AdminCategoriesPage() {
   const [notice, setNotice] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const imageFileInputRef = useRef<HTMLInputElement>(null)
 
-  const getProductCount = useCallback((slug: string) => categoryList.find((item) => item.slug === slug)?.productCount
-    ?? products.filter((product) => product.categorySlug === slug).length, [categoryList])
+  const getProductCount = useCallback((slug: string) => categoryList.find((item) => item.slug === slug)?.productCount ?? 0, [categoryList])
 
   const loadCategories = async () => {
     try {
@@ -97,13 +77,13 @@ function AdminCategoriesPage() {
         id: string; name: string; slug: string; description?: string; imageUrl?: string
         displayOrder: number; status: 'HOAT_DONG' | 'DANG_AN'; productCount: number
       }>>('/admin/categories')
-      if (rows.length) setCategoryList(rows.map((item) => ({
+      setCategoryList(rows.map((item) => ({
         id: item.id, name: item.name, slug: item.slug, description: item.description || '',
         image: item.imageUrl || '', status: item.status === 'HOAT_DONG' ? 'active' : 'hidden',
         displayOrder: item.displayOrder, createdAt: new Date().toISOString(), productCount: item.productCount,
       })))
     } catch {
-      // Giữ dữ liệu dự phòng nếu API quản trị chưa sẵn sàng.
+      setCategoryList([])
     }
   }
 
@@ -155,7 +135,7 @@ function AdminCategoriesPage() {
 
   const activeCount = categoryList.filter((category) => category.status === 'active').length
   const hiddenCount = categoryList.length - activeCount
-  const assignedProductCount = products.filter((product) => categoryList.some((category) => category.slug === product.categorySlug)).length
+  const assignedProductCount = categoryList.reduce((total, category) => total + (category.productCount ?? 0), 0)
   const editingCategoryProductCount = editingCategory ? getProductCount(editingCategory.slug) : 0
 
   const openCreateForm = () => {
@@ -285,7 +265,7 @@ function AdminCategoriesPage() {
         <article><span className="is-red"><AdminIcon name="folder" /></span><div><small>Tổng danh mục</small><strong>{categoryList.length}</strong></div></article>
         <article><span className="is-green"><AdminIcon name="eye" /></span><div><small>Đang hiển thị</small><strong>{activeCount}</strong></div></article>
         <article><span className="is-orange"><AdminIcon name="pause" /></span><div><small>Đang ẩn</small><strong>{hiddenCount}</strong></div></article>
-        <article><span className="is-blue"><AdminIcon name="products" /></span><div><small>Sản phẩm đã phân loại</small><strong>{assignedProductCount}/{products.length}</strong></div></article>
+        <article><span className="is-blue"><AdminIcon name="products" /></span><div><small>Sản phẩm đã phân loại</small><strong>{assignedProductCount}</strong></div></article>
       </section>
 
       <section className="admin-categories-panel">

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
-import { categories, formatPrice, products } from '../../data/products'
+import { formatPrice } from '../../data/products'
 import { usePagination } from '../../hooks/usePagination'
 import { api } from '../../services/api'
 import './AdminInventoryPage.css'
@@ -59,86 +59,8 @@ interface VoucherFormState {
   lines: VoucherLineForm[]
 }
 
-const stockByProductId: Record<string, number> = {
-  '1': 18,
-  '2': 42,
-  '3': 9,
-  '4': 31,
-  '5': 6,
-  '6': 24,
-  '7': 0,
-  '8': 15,
-}
-
-const costByProductId: Record<string, number> = {
-  '1': 305000,
-  '2': 150000,
-  '3': 170000,
-  '4': 145000,
-  '5': 170000,
-  '6': 185000,
-  '7': 190000,
-  '8': 160000,
-}
-
-const locationByProductId: Record<string, string> = {
-  '1': 'A1-01',
-  '2': 'A1-02',
-  '3': 'A1-03',
-  '4': 'A2-01',
-  '5': 'A1-04',
-  '6': 'A2-02',
-  '7': 'A2-03',
-  '8': 'A1-05',
-}
-
-const inventorySeed: InventoryProduct[] = products.map((product) => ({
-  id: product.id,
-  sku: `RBN-${product.id.padStart(3, '0')}`,
-  name: product.name,
-  image: product.image,
-  category: product.category,
-  categorySlug: product.categorySlug,
-  unit: product.isCombo ? 'Bộ' : product.categorySlug === 'mat-na' ? 'Hũ' : 'Chai',
-  stock: stockByProductId[product.id] ?? 0,
-  minimumStock: product.isCombo ? 8 : 10,
-  costPrice: costByProductId[product.id] ?? Math.round(product.price * 0.68),
-  location: locationByProductId[product.id] ?? 'A3-01',
-  updatedAt: '2026-07-14T08:35:00',
-}))
-
-const voucherSeed: StockVoucher[] = [
-  {
-    id: 'v1', code: 'PN-260714-005', type: 'in', createdAt: '2026-07-14T08:35:00',
-    partner: 'Xưởng sản xuất Rubeanora', note: 'Nhập thành phẩm đợt 2 tháng 7.', createdBy: 'Phạm Thu Hương',
-    items: [{ productId: '2', quantity: 30, unitCost: 150000 }, { productId: '4', quantity: 20, unitCost: 145000 }],
-  },
-  {
-    id: 'v2', code: 'PX-260714-009', type: 'out', createdAt: '2026-07-14T07:15:00',
-    partner: 'Đơn hàng RBB-26071402', note: 'Xuất bán cho đơn hàng đã xác nhận.', createdBy: 'Nguyễn Minh Anh',
-    items: [{ productId: '1', quantity: 1, unitCost: 305000 }],
-  },
-  {
-    id: 'v3', code: 'PX-260713-008', type: 'out', createdAt: '2026-07-13T18:40:00',
-    partner: 'Đơn hàng RBB-26071303', note: 'Xuất hàng giao cho đơn vị vận chuyển.', createdBy: 'Nguyễn Minh Anh',
-    items: [{ productId: '2', quantity: 2, unitCost: 150000 }, { productId: '3', quantity: 1, unitCost: 170000 }],
-  },
-  {
-    id: 'v4', code: 'PN-260712-004', type: 'in', createdAt: '2026-07-12T10:20:00',
-    partner: 'Xưởng sản xuất Rubeanora', note: 'Nhập combo và serum thành phẩm.', createdBy: 'Phạm Thu Hương',
-    items: [{ productId: '1', quantity: 12, unitCost: 305000 }, { productId: '6', quantity: 18, unitCost: 185000 }],
-  },
-  {
-    id: 'v5', code: 'PX-260711-007', type: 'out', createdAt: '2026-07-11T14:10:00',
-    partner: 'Bộ phận Marketing', note: 'Xuất sản phẩm mẫu cho buổi chụp hình.', createdBy: 'Trần Quang Huy',
-    items: [{ productId: '5', quantity: 2, unitCost: 170000 }, { productId: '6', quantity: 2, unitCost: 185000 }],
-  },
-  {
-    id: 'v6', code: 'PN-260709-003', type: 'in', createdAt: '2026-07-09T09:05:00',
-    partner: 'Xưởng sản xuất Rubeanora', note: 'Bổ sung mặt nạ và nước tẩy trang.', createdBy: 'Phạm Thu Hương',
-    items: [{ productId: '3', quantity: 20, unitCost: 170000 }, { productId: '8', quantity: 20, unitCost: 160000 }],
-  },
-]
+const initialInventory: InventoryProduct[] = []
+const initialVouchers: StockVoucher[] = []
 
 const stockStatusMeta: Record<StockStatus, { label: string; tone: string }> = {
   good: { label: 'Tồn ổn định', tone: 'good' },
@@ -171,8 +93,8 @@ const createVoucherLine = (product: InventoryProduct): VoucherLineForm => ({
 })
 
 function AdminInventoryPage() {
-  const [inventory, setInventory] = useState<InventoryProduct[]>(inventorySeed)
-  const [vouchers, setVouchers] = useState<StockVoucher[]>(voucherSeed)
+  const [inventory, setInventory] = useState<InventoryProduct[]>(initialInventory)
+  const [vouchers, setVouchers] = useState<StockVoucher[]>(initialVouchers)
   const [activeView, setActiveView] = useState<InventoryView>('stock')
   const [searchValue, setSearchValue] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -186,7 +108,7 @@ function AdminInventoryPage() {
   const [notice, setNotice] = useState('')
   const [suppliers, setSuppliers] = useState<Array<{ id: string; code: string; name: string }>>([])
   const [voucherForm, setVoucherForm] = useState<VoucherFormState>(() => ({
-    type: 'in', date: toDateInput(), partner: '', note: '', lines: [createVoucherLine(inventorySeed[0])],
+    type: 'in', date: toDateInput(), partner: '', note: '', lines: [],
   }))
 
   const loadInventory = async () => {
@@ -195,7 +117,7 @@ function AdminInventoryPage() {
         products: Array<Record<string, any>>; suppliers: Array<{ id: string; code: string; name: string }>
         imports: Array<Record<string, any>>; exports: Array<Record<string, any>>
       }>('/admin/inventory')
-      if (data.products.length) setInventory(data.products.map((item) => ({
+      setInventory(data.products.map((item) => ({
         id: String(item.id), sku: String(item.sku), name: String(item.name), image: String(item.image || ''),
         category: '', categorySlug: '', unit: 'Sản phẩm', stock: Number(item.stock),
         minimumStock: Number(item.minimumStock), costPrice: Number(item.costPrice), location: 'Kho chính',
@@ -210,9 +132,10 @@ function AdminInventoryPage() {
         id: String(item.id), code: String(item.code), type: 'out' as const, createdAt: String(item.date),
         partner: String(item.recipient || ''), note: String(item.note || ''), createdBy: String(item.createdBy || ''), items: [],
       }))
-      if (imports.length || exports.length) setVouchers([...imports, ...exports])
+      setVouchers([...imports, ...exports])
     } catch {
-      // Giữ dữ liệu dự phòng.
+      setInventory([])
+      setVouchers([])
     }
   }
 
@@ -298,12 +221,18 @@ function AdminInventoryPage() {
     setCurrentPage: setVoucherPage,
   } = usePagination(filteredVouchers, 6, `${searchValue}|${voucherTypeFilter}|${voucherPeriod}|${voucherSort}`)
 
+  const inventoryCategories = Array.from(new Map(inventory.filter((item) => item.categorySlug).map((item) => [item.categorySlug, item.category])).entries())
+
   const totalStock = inventory.reduce((total, product) => total + product.stock, 0)
   const replenishmentCount = inventory.filter((product) => product.stock <= product.minimumStock).length
   const inventoryValue = inventory.reduce((total, product) => total + product.stock * product.costPrice, 0)
 
   const openVoucherForm = (type: VoucherType) => {
     const firstProduct = inventory[0]
+    if (!firstProduct) {
+      setNotice('Chưa có sản phẩm để tạo phiếu kho')
+      return
+    }
     setVoucherForm({ type, date: toDateInput(), partner: '', note: '', lines: [createVoucherLine(firstProduct)] })
     setIsVoucherFormOpen(true)
   }
@@ -324,6 +253,7 @@ function AdminInventoryPage() {
 
   const addVoucherLine = () => {
     const availableProduct = inventory.find((product) => !voucherForm.lines.some((line) => line.productId === product.id)) ?? inventory[0]
+    if (!availableProduct) return
     setVoucherForm((current) => ({ ...current, lines: [...current.lines, createVoucherLine(availableProduct)] }))
   }
 
@@ -333,6 +263,10 @@ function AdminInventoryPage() {
 
   const handleVoucherSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!voucherForm.lines.length) {
+      setNotice('Phiếu kho cần ít nhất một sản phẩm')
+      return
+    }
     const parsedItems = voucherForm.lines.map((line) => ({
       productId: line.productId,
       quantity: Number(line.quantity),
@@ -436,7 +370,7 @@ function AdminInventoryPage() {
           <>
             <div className="admin-inventory-toolbar">
               <div>
-                <label><span>Danh mục</span><select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} aria-label="Lọc kho theo danh mục"><option value="all">Tất cả danh mục</option>{categories.filter((category) => category.slug !== 'tat-ca').map((category) => <option value={category.slug} key={category.slug}>{category.name}</option>)}</select></label>
+                <label><span>Danh mục</span><select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} aria-label="Lọc kho theo danh mục"><option value="all">Tất cả danh mục</option>{inventoryCategories.map(([slug, name]) => <option value={slug} key={slug}>{name}</option>)}</select></label>
                 <label><span>Tồn kho</span><select value={stockFilter} onChange={(event) => setStockFilter(event.target.value as 'all' | StockStatus)} aria-label="Lọc theo trạng thái tồn"><option value="all">Tất cả trạng thái</option><option value="good">Tồn ổn định</option><option value="low">Sắp hết</option><option value="out">Hết hàng</option></select></label>
                 <label><span>Sắp xếp</span><select value={stockSort} onChange={(event) => setStockSort(event.target.value as typeof stockSort)} aria-label="Sắp xếp tồn kho"><option value="stock-asc">Tồn ít nhất</option><option value="stock-desc">Tồn nhiều nhất</option><option value="value">Giá trị tồn cao nhất</option><option value="name">Tên sản phẩm</option></select></label>
               </div>
@@ -504,7 +438,7 @@ function AdminInventoryPage() {
               <div className="admin-inventory-voucher-form-head">
                 <div className="admin-inventory-type-switch"><button type="button" className={voucherForm.type === 'in' ? 'is-active' : ''} onClick={() => setVoucherForm((current) => ({ ...current, type: 'in' }))}>Phiếu nhập</button><button type="button" className={voucherForm.type === 'out' ? 'is-active' : ''} onClick={() => setVoucherForm((current) => ({ ...current, type: 'out' }))}>Phiếu xuất</button></div>
                 <label><span>Ngày lập phiếu *</span><input type="date" required value={voucherForm.date} onChange={(event) => setVoucherForm((current) => ({ ...current, date: event.target.value }))} /></label>
-                <label><span>{voucherForm.type === 'in' ? 'Nhà cung cấp / Nguồn nhập *' : 'Bộ phận / Mục đích xuất *'}</span><input required value={voucherForm.partner} placeholder={voucherForm.type === 'in' ? 'Ví dụ: Xưởng sản xuất Rubeanora' : 'Ví dụ: Đơn hàng RBB-26071401'} onChange={(event) => setVoucherForm((current) => ({ ...current, partner: event.target.value }))} /></label>
+                <label><span>{voucherForm.type === 'in' ? 'Nhà cung cấp / Nguồn nhập *' : 'Bộ phận / Mục đích xuất *'}</span><input required value={voucherForm.partner} placeholder={voucherForm.type === 'in' ? 'Nhập nhà cung cấp' : 'Nhập bộ phận hoặc mục đích xuất'} onChange={(event) => setVoucherForm((current) => ({ ...current, partner: event.target.value }))} /></label>
                 <label className="is-wide"><span>Ghi chú</span><input value={voucherForm.note} placeholder="Nội dung bổ sung cho phiếu kho" onChange={(event) => setVoucherForm((current) => ({ ...current, note: event.target.value }))} /></label>
               </div>
               <section className="admin-inventory-voucher-lines">

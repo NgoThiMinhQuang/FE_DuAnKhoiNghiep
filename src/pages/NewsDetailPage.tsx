@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { getNewsArticle, newsArticles } from '../data/news'
 import type { NewsArticle } from '../data/news'
 import { api } from '../services/api'
 import './NewsDetailPage.css'
 
 function NewsDetailPage() {
   const { id } = useParams()
-  const [article, setArticle] = useState<NewsArticle | undefined>(() => getNewsArticle(Number(id)))
-  const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>(() => newsArticles.filter((item) => item.id !== Number(id)).slice(0, 5))
+  const [article, setArticle] = useState<NewsArticle | undefined>(undefined)
+  const [relatedArticles, setRelatedArticles] = useState<NewsArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [commentSent, setCommentSent] = useState(false)
 
@@ -20,7 +19,10 @@ function NewsDetailPage() {
         setArticle(data.article)
         setRelatedArticles(data.relatedArticles)
       })
-      .catch(() => setArticle(getNewsArticle(Number(id))))
+      .catch(() => {
+        setArticle(undefined)
+        setRelatedArticles([])
+      })
       .finally(() => setLoading(false))
   }, [id])
 
@@ -84,7 +86,7 @@ function NewsDetailPage() {
           <div className="news-detail-meta">
             <span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" /><path d="M5 21v-2a7 7 0 0 1 14 0v2" /></svg>
-              Red Bean Beauty
+              {article.author || 'Rubeanora'}
             </span>
             <span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>

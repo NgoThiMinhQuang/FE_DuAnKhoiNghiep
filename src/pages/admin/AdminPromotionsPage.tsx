@@ -54,15 +54,7 @@ const promotionStatuses: Record<PromotionStatus, { label: string }> = {
   disabled: { label: 'Đã tắt' },
 }
 
-const initialPromotions: Promotion[] = [
-  { id: 'promotion-001', code: 'REDBEAN', name: 'Ưu đãi khách hàng mới', description: 'Áp dụng cho khách hàng mua lần đầu với đơn hàng từ 200.000đ.', type: 'percentage', value: 10, minimumOrder: 200000, maximumDiscount: 100000, usageLimit: 500, usedCount: 186, startDate: '2026-07-01', endDate: '2026-12-31', enabled: true },
-  { id: 'promotion-002', code: 'COMBO20', name: 'Ưu đãi Combo 3 món', description: 'Giảm 20% cho combo chăm sóc da đậu đỏ 3 món.', type: 'percentage', value: 20, minimumOrder: 400000, maximumDiscount: 150000, usageLimit: 250, usedCount: 92, startDate: '2026-07-01', endDate: '2026-08-31', enabled: true },
-  { id: 'promotion-003', code: 'FREESHIP', name: 'Miễn phí giao hàng toàn quốc', description: 'Miễn phí vận chuyển cho đơn hàng có giá trị từ 300.000đ.', type: 'shipping', value: 30000, minimumOrder: 300000, usageLimit: 800, usedCount: 347, startDate: '2026-01-01', endDate: '2026-12-31', enabled: true },
-  { id: 'promotion-004', code: 'SKINCARE', name: 'Tặng mẫu thử chăm sóc da', description: 'Tặng mẫu thử đậu đỏ khi đơn hàng đạt từ 250.000đ.', type: 'gift', value: 0, minimumOrder: 250000, usageLimit: 300, usedCount: 0, startDate: '2026-07-15', endDate: '2026-09-30', enabled: true },
-  { id: 'promotion-005', code: 'REDBEAN50', name: 'Giảm 50K đơn hàng đầu tiên', description: 'Giảm trực tiếp 50.000đ cho đơn hàng từ 200.000đ.', type: 'fixed', value: 50000, minimumOrder: 200000, usageLimit: 400, usedCount: 128, startDate: '2026-06-01', endDate: '2026-09-30', enabled: true },
-  { id: 'promotion-006', code: 'WELCOME15', name: 'Chào hè cùng Red Bean Beauty', description: 'Giảm 15% cho toàn bộ sản phẩm trong chương trình chào hè.', type: 'percentage', value: 15, minimumOrder: 250000, maximumDiscount: 120000, usageLimit: 200, usedCount: 200, startDate: '2026-05-01', endDate: '2026-06-30', enabled: true },
-  { id: 'promotion-007', code: 'MEMBER10', name: 'Ưu đãi thành viên thân thiết', description: 'Mã thử nghiệm dành cho khách hàng thành viên.', type: 'percentage', value: 10, minimumOrder: 300000, maximumDiscount: 80000, usageLimit: 300, usedCount: 46, startDate: '2026-07-01', endDate: '2026-12-31', enabled: false },
-]
+const emptyPromotions: Promotion[] = []
 
 const today = new Date().toISOString().slice(0, 10)
 
@@ -98,7 +90,7 @@ const formatPromotionValue = (promotion: Pick<Promotion, 'type' | 'value'>) => {
 const formatDate = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('vi-VN')
 
 function AdminPromotionsPage() {
-  const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions)
+  const [promotions, setPromotions] = useState<Promotion[]>(emptyPromotions)
   const [searchValue, setSearchValue] = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | PromotionType>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | PromotionStatus>('all')
@@ -112,7 +104,7 @@ function AdminPromotionsPage() {
   const loadPromotions = async () => {
     try {
       const rows = await api.get<Array<Record<string, any>>>('/admin/promotions')
-      if (rows.length) setPromotions(rows.map((item) => ({
+      setPromotions(rows.map((item) => ({
         id: String(item.id), code: String(item.code), name: String(item.name), description: String(item.description || ''),
         type: item.type === 'PHAN_TRAM' ? 'percentage' : item.type === 'MIEN_PHI_VAN_CHUYEN' ? 'shipping' : 'fixed',
         value: Number(item.value), minimumOrder: Number(item.minimumOrder),
@@ -122,7 +114,7 @@ function AdminPromotionsPage() {
         enabled: item.status === 'HOAT_DONG',
       })))
     } catch {
-      // Giữ dữ liệu dự phòng.
+      setPromotions([])
     }
   }
 
