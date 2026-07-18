@@ -457,6 +457,36 @@
   color: #3A1215;
 }
 
+.products-heading-copy {
+  min-width: 0;
+}
+
+.products-search-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 7px 0 0;
+  color: #75696a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.products-search-summary strong {
+  color: #3a1215;
+}
+
+.products-search-summary button {
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: #b53740;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .products-sort {
   display: flex;
   align-items: center;
@@ -676,13 +706,40 @@
 }
 
 .products-empty {
-  padding: 60px 20px;
+  padding: 58px 20px;
+  border: 1px dashed #dfc7c9;
+  border-radius: 10px;
+  background: #fffafa;
   text-align: center;
 }
 
+.products-empty strong {
+  display: block;
+  color: #4b2629;
+  font-size: 19px;
+}
+
 .products-empty p {
+  max-width: 520px;
+  margin: 9px auto 18px;
   color: #888;
   font-size: 16px;
+  line-height: 1.55;
+}
+
+.products-empty button {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #b53740;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.products-empty button:hover {
+  background: #8e2b33;
 }
 
 /* ---- Wishlist toast ---- */
@@ -1236,6 +1293,11 @@
 
   .products-title {
     font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .products-search-summary {
+    font-size: 12px;
   }
 
   .products-sort {

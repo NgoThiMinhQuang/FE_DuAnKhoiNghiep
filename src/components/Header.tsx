@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useCatalog } from '../hooks/useCatalog'
 import { getCartCount, getCartItems, syncCartFromApi } from '../utils/cart'
@@ -26,6 +26,7 @@ function Header() {
   const [wishlistCount, setWishlistCount] = useState(() => getWishlistIds().length)
   const [cartCount, setCartCount] = useState(() => getCartCount())
   const [authUser, setAuthUser] = useState(() => getCurrentUser())
+  const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(location.search).get('tu-khoa') || '')
 
   useEffect(() => {
     const syncAuth = () => setAuthUser(getCurrentUser())
@@ -84,6 +85,25 @@ function Header() {
     if (location.pathname.startsWith('/tai-khoan')) navigate('/tai-khoan?che-do=dang-nhap')
   }
 
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const keyword = searchTerm.replace(/\s+/g, ' ').trim()
+
+    if (!keyword) {
+      setSearchTerm('')
+      navigate('/san-pham')
+      return
+    }
+
+    const params = new URLSearchParams({ 'tu-khoa': keyword })
+    navigate(`/san-pham?${params.toString()}`)
+  }
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/san-pham')) return
+    setSearchTerm(new URLSearchParams(location.search).get('tu-khoa') || '')
+  }, [location.pathname, location.search])
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -133,8 +153,22 @@ function Header() {
           <img src={storeSettings.logo || '/images/logo1.png'} alt={storeSettings.storeName} className="logo-img" />
         </Link>
 
-        <form className="header-search" role="search">
-          <input type="search" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" />
+        <form className="header-search" role="search" onSubmit={handleSearchSubmit}>
+          <input
+            type="search"
+            name="tu-khoa"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Tìm kiếm sản phẩm"
+            aria-label="Tìm kiếm sản phẩm"
+            autoComplete="off"
+            enterKeyHint="search"
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              event.preventDefault()
+              event.currentTarget.form?.requestSubmit()
+            }}
+          />
           <button type="submit" aria-label="Tìm kiếm">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
