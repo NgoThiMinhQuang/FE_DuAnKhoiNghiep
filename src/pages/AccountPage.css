@@ -250,6 +250,25 @@
   gap: 12px;
 }
 
+.google-signin-host {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.google-signin-error {
+  display: flex;
+  min-height: 43px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  color: #9c2831;
+  font-size: 12px;
+  text-align: center;
+}
+
 .social-login button {
   display: flex;
   align-items: center;

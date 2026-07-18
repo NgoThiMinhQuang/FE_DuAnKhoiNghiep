@@ -91,6 +91,13 @@ export const loginSocial = async (provider: 'google' | 'facebook') => {
   return result.user
 }
 
+export const loginWithGoogle = async (credential: string) => {
+  const result = await api.post<{ token: string; user: AuthUser }>('/auth/google', { credential })
+  setAccessToken(result.token)
+  saveSession({ user: result.user, password: '' })
+  return result.user
+}
+
 export const updateCurrentUser = (updater: (user: AuthUser) => AuthUser) => {
   const session = getAuthSession()
   if (!session) return null
