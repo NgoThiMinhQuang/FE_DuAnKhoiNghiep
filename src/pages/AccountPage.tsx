@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { getCurrentUser, loginDemo, loginSocial, registerDemo } from '../utils/auth'
+import GoogleSignInButton from '../components/GoogleSignInButton'
+import { getCurrentUser, loginDemo, loginSocial, loginWithGoogle, registerDemo } from '../utils/auth'
 import './AccountPage.css'
 
 type AccountMode = 'login' | 'register'
@@ -81,6 +82,16 @@ function AccountPage() {
       setNotice(error instanceof Error ? error.message : 'Không thể đăng nhập mạng xã hội.')
     }
   }
+
+  const handleGoogleLogin = useCallback(async (credential: string) => {
+    try {
+      setNotice('Đang xác thực tài khoản Google...')
+      const user = await loginWithGoogle(credential)
+      navigate(user.role === 'ADMIN' ? '/admin' : '/')
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Không thể đăng nhập bằng Google.')
+    }
+  }, [navigate])
 
   if (existingUser) {
     return <Navigate to={existingUser.role === 'ADMIN' ? '/admin' : '/'} replace />
@@ -214,10 +225,7 @@ function AccountPage() {
           <div className="account-divider"><span>hoặc tiếp tục với</span></div>
 
           <div className="social-login">
-            <button type="button" onClick={() => handleSocialLogin('Google')}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.2c0-.7-.1-1.4-.2-2H12v3.7h5.1a4.4 4.4 0 0 1-1.9 2.8v2.4h3.1c1.8-1.7 2.7-4.1 2.7-6.9Z" /><path d="M12 21c2.5 0 4.7-.8 6.3-2.2l-3.1-2.4c-.9.6-2 .9-3.2.9a5.5 5.5 0 0 1-5.2-3.8H3.6V16A9.5 9.5 0 0 0 12 21Z" /><path d="M6.8 13.5a5.7 5.7 0 0 1 0-3.5V7.5H3.6a9.5 9.5 0 0 0 0 8.5l3.2-2.5Z" /><path d="M12 6.3c1.5 0 2.8.5 3.8 1.5l2.8-2.8A9.3 9.3 0 0 0 3.6 7.5L6.8 10A5.5 5.5 0 0 1 12 6.3Z" /></svg>
-              Google
-            </button>
+            <GoogleSignInButton onCredential={handleGoogleLogin} onError={setNotice} />
             <button type="button" onClick={() => handleSocialLogin('Facebook')}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v8h4v-8h3l1-4h-4V9c0-.6.4-1 1-1Z" /></svg>
               Facebook
