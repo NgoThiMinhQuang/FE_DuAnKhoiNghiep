@@ -4,3 +4,5 @@
 .customer-chat-panel{height:min(540px,calc(100dvh - 105px));min-height:0;max-height:540px}.customer-chat-panel>header{flex:0 0 72px}.customer-chat-history{min-height:0;flex:1 1 auto}.customer-chat-panel form{flex:0 0 auto}.customer-chat-panel:has(.customer-chat-fields){height:min(600px,calc(100dvh - 105px));max-height:600px}.customer-chat-panel:has(.customer-chat-fields) .customer-chat-history{min-height:120px;max-height:none;flex:1 1 auto}@media(max-width:480px){.customer-chat-panel,.customer-chat-panel:has(.customer-chat-fields){height:min(520px,calc(100dvh - 90px));min-height:0;max-height:520px}}
 
 .customer-chat-panel{height:min(500px,calc(100dvh - 105px));max-height:500px}.customer-chat-panel:has(.customer-chat-fields){height:min(550px,calc(100dvh - 105px));max-height:550px}@media(max-width:480px){.customer-chat-panel,.customer-chat-panel:has(.customer-chat-fields){height:min(480px,calc(100dvh - 90px));max-height:480px}}
+
+.customer-chat-compose .customer-chat-submit{width:auto;min-width:64px;padding:0 15px;flex:0 0 auto;border-radius:20px;font-size:11px}.customer-chat-compose .customer-chat-submit:disabled{cursor:not-allowed}

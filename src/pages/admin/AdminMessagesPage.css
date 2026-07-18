@@ -4,3 +4,5 @@
 @media(max-width:480px){.admin-messages-heading{align-items:center}.admin-messages-heading h1{font-size:21px}.admin-messages-heading>button{height:34px;padding:0 10px}.admin-message-workspace{height:calc(100vh - 220px);border-radius:7px}.admin-conversation-body{padding:15px 12px}.admin-chat-message>div{max-width:84%}.admin-conversation-compose>div>span{display:none}.admin-conversation-compose button{flex:1}}
 
 .admin-conversation-compose .is-send{min-width:76px;background:#a52c35;color:#fff}.admin-conversation-compose .is-send:hover{background:#8f2029}.admin-conversation-compose .is-complete{border:1px solid #b8ddca;background:#edf8f2;color:#277653}
+
+.admin-message-workspace,.admin-message-inbox,.admin-message-conversation{min-height:0}.admin-message-conversation{overflow:hidden}.admin-conversation-header{flex:0 0 64px}.admin-conversation-body{min-height:0;flex:1 1 auto;overflow-y:auto}.admin-conversation-compose{position:relative;z-index:2;flex:0 0 auto;box-shadow:0 -5px 16px rgba(60,38,40,.05)}

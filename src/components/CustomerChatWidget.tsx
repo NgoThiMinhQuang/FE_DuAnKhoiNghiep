@@ -4,10 +4,10 @@ import { apiRequest } from '../services/api'
 import './CustomerChatWidget.css'
 
 type ChatForm = { fullName: string; email: string; phone: string; message: string }
-type Reply = { id: string; content: string; sentAt: string; sender: string; readAt?: string | null }
+type Reply = { id: string; content: string; sentAt: string; sender: string; direction?: 'ADMIN' | 'CUSTOMER'; readAt?: string | null }
 type Conversation = { id: string; subject?: string; content: string; status: string; createdAt: string; replies: Reply[] }
 type SupportResult = { conversations: Conversation[] }
-type SubmitResult = { id: string; status: string }
+type SubmitResult = { id: string; status: string; continued?: boolean }
 const emptyForm: ChatForm = { fullName: '', email: '', phone: '', message: '' }
 const formatTime = (value: string) => new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }).format(new Date(value))
 
@@ -44,7 +44,7 @@ function CustomerChatWidget() {
   }, [loadMessages, user])
 
   const unreadCount = useMemo(() => conversations.reduce((total, conversation) => (
-    total + conversation.replies.filter((reply) => !reply.readAt).length
+    total + conversation.replies.filter((reply) => reply.direction !== 'CUSTOMER' && !reply.readAt).length
   ), 0), [conversations])
 
   useEffect(() => {
@@ -79,14 +79,23 @@ function CustomerChatWidget() {
     try {
       const sentMessage = form.message.trim()
       const result = await apiRequest<SubmitResult>('/contact', { method: 'POST', body: JSON.stringify({ ...form, message: sentMessage, subject: 'Yêu cầu hỗ trợ từ hộp chat' }) })
-      setConversations((items) => [...items, {
-        id: result.id,
-        subject: 'Yêu cầu hỗ trợ từ hộp chat',
-        content: sentMessage,
-        status: result.status,
-        createdAt: new Date().toISOString(),
-        replies: [],
-      }])
+      const sentAt = new Date().toISOString()
+      setConversations((items) => {
+        const existing = items.find((item) => item.id === result.id)
+        if (result.continued && existing) return items.map((item) => item.id === result.id ? {
+          ...item,
+          status: result.status,
+          replies: [...item.replies, { id: `customer-${Date.now()}`, content: sentMessage, sentAt, sender: form.fullName, direction: 'CUSTOMER' }],
+        } : item)
+        return [...items, {
+          id: result.id,
+          subject: 'Yêu cầu hỗ trợ từ hộp chat',
+          content: sentMessage,
+          status: result.status,
+          createdAt: sentAt,
+          replies: [],
+        }]
+      })
       setForm((current) => ({ ...current, message: '' }))
     } catch (error) {
       setNotice({ type: 'error', text: error instanceof Error ? error.message : 'Không thể gửi tin nhắn' })
@@ -101,7 +110,7 @@ function CustomerChatWidget() {
         <div className="customer-chat-intro">Xin chào! Bạn đang cần Rubeanora tư vấn điều gì?</div>
         {conversations.map((conversation) => <div className="customer-chat-thread" key={conversation.id}>
           <div className="customer-chat-bubble is-customer"><p>{conversation.content}</p><time>{formatTime(conversation.createdAt)}</time></div>
-          {conversation.replies.map((reply) => <div className="customer-chat-bubble is-support" key={reply.id}><strong>Rubeanora hỗ trợ</strong><p>{reply.content}</p><time>{formatTime(reply.sentAt)}</time></div>)}
+          {conversation.replies.map((reply) => <div className={`customer-chat-bubble is-${reply.direction === 'CUSTOMER' ? 'customer' : 'support'}`} key={reply.id}>{reply.direction !== 'CUSTOMER' && <strong>Rubeanora hỗ trợ</strong>}<p>{reply.content}</p><time>{formatTime(reply.sentAt)}</time></div>)}
         </div>)}
       </div>
       <form onSubmit={submitMessage}>
@@ -110,7 +119,7 @@ function CustomerChatWidget() {
           <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="Email *" required maxLength={150} />
           <input type="tel" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder="Số điện thoại" maxLength={20} />
         </div>}
-        <div className="customer-chat-compose"><textarea value={form.message} onChange={(e) => updateField('message', e.target.value)} placeholder="Nhập tin nhắn..." required rows={2} maxLength={2000} /><button className="customer-chat-submit" type="submit" disabled={sending} aria-label="Gửi tin nhắn">{sending ? '…' : '➤'}</button></div>
+        <div className="customer-chat-compose"><textarea value={form.message} onChange={(e) => updateField('message', e.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} placeholder="Nhập tin nhắn..." required rows={2} maxLength={2000} /><button className="customer-chat-submit" type="submit" disabled={sending || !form.message.trim()}>{sending ? 'Đang gửi...' : 'Gửi'}</button></div>
         {notice && <p className={`customer-chat-notice is-${notice.type}`}>{notice.text}</p>}
       </form>
     </section>}

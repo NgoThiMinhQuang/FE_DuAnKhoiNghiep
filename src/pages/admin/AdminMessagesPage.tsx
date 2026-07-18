@@ -15,9 +15,10 @@ type Message = {
   adminNote?: string
   handledBy?: string
   createdAt: string
+  threadMessages?: AdminReply[]
 }
 type Result = { items: Message[]; pagination: { total: number } }
-type AdminReply = { id: string; content: string; sentAt: string; sender: string }
+type AdminReply = { id: string; content: string; sentAt: string; sender: string; direction?: 'ADMIN' | 'CUSTOMER'; readAt?: string | null }
 
 const statusMeta: Record<Status, { label: string; tone: string }> = {
   MOI: { label: 'Tin mới', tone: 'new' },
@@ -38,8 +39,12 @@ const getReplies = (message: Message): AdminReply[] => {
   } catch {
     // Dữ liệu cũ chỉ có một ghi chú dạng văn bản.
   }
-  return [{ id: `legacy-${message.id}`, content: message.adminNote, sentAt: message.createdAt, sender: message.handledBy || 'Nhân viên hỗ trợ' }]
+  return [{ id: `legacy-${message.id}`, content: message.adminNote, sentAt: message.createdAt, sender: message.handledBy || 'Nhân viên hỗ trợ', direction: 'ADMIN' }]
 }
+
+const getThreadMessages = (message: Message): AdminReply[] => message.threadMessages?.length
+  ? message.threadMessages
+  : [{ id: `contact-${message.id}`, content: message.content, sentAt: message.createdAt, sender: message.fullName, direction: 'CUSTOMER' }, ...getReplies(message)]
 
 function AdminMessagesPage() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -69,19 +74,40 @@ function AdminMessagesPage() {
     return () => window.clearInterval(timer)
   }, [load])
 
+  const conversations = useMemo(() => {
+    const grouped = new Map<string, Message>()
+    messages.forEach((message) => {
+      const key = message.email.trim().toLocaleLowerCase('vi')
+      const current = grouped.get(key)
+      if (!current) {
+        grouped.set(key, { ...message, threadMessages: [...getThreadMessages(message)] })
+        return
+      }
+      const messageIsNewer = new Date(message.createdAt).getTime() > new Date(current.createdAt).getTime()
+      const latest = messageIsNewer ? message : current
+      grouped.set(key, {
+        ...latest,
+        threadMessages: [...getThreadMessages(current), ...getThreadMessages(message)]
+          .filter((entry, index, entries) => entries.findIndex((item) => item.id === entry.id) === index)
+          .sort((left, right) => new Date(left.sentAt).getTime() - new Date(right.sentAt).getTime()),
+      })
+    })
+    return [...grouped.values()].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+  }, [messages])
+
   const filtered = useMemo(() => {
     const key = search.trim().toLocaleLowerCase('vi')
-    return messages.filter((message) => (
+    return conversations.filter((message) => (
       (filter === 'ALL' || message.status === filter)
       && (!key || [message.fullName, message.email, message.phone ?? '', message.content]
         .some((value) => value.toLocaleLowerCase('vi').includes(key)))
     ))
-  }, [filter, messages, search])
+  }, [conversations, filter, search])
 
-  const selected = messages.find((message) => message.id === selectedId) ?? null
+  const selected = conversations.find((message) => message.id === selectedId) ?? null
   const count = (status?: Status) => status
-    ? messages.filter((message) => message.status === status).length
-    : messages.length
+    ? conversations.filter((message) => message.status === status).length
+    : conversations.length
 
   const update = async (message: Message, status: Status, sendReply = false) => {
     if (sendReply && !note.trim()) return
@@ -93,6 +119,7 @@ function AdminMessagesPage() {
         content: note.trim(),
         sentAt: new Date().toISOString(),
         sender: 'Nhân viên hỗ trợ',
+        direction: 'ADMIN',
       })
       const adminNote = JSON.stringify({ replies })
       await apiRequest(`/admin/contacts/${message.id}`, {
@@ -100,6 +127,7 @@ function AdminMessagesPage() {
         body: JSON.stringify({ status, adminNote }),
       })
       const next = { ...message, status, adminNote }
+      if (sendReply) next.threadMessages = [...getThreadMessages(message), replies.at(-1)!]
       setMessages((items) => items.map((item) => item.id === message.id ? next : item))
       if (sendReply) setNote('')
       setError('')
@@ -177,7 +205,7 @@ function AdminMessagesPage() {
                 <span className="admin-message-copy">
                   <span><strong>{message.fullName}</strong><time>{formatDate(message.createdAt)}</time></span>
                   <b>{message.subject || 'Yêu cầu hỗ trợ'}</b>
-                  <p>{message.content}</p>
+                  <p>{getThreadMessages(message).at(-1)?.content || message.content}</p>
                   <i className={`is-${statusMeta[message.status].tone}`}>{statusMeta[message.status].label}</i>
                 </span>
               </button>
@@ -196,21 +224,18 @@ function AdminMessagesPage() {
               </header>
 
               <div className="admin-conversation-body">
-                <div className="admin-conversation-date"><span>{formatDate(selected.createdAt)}</span></div>
-                <div className="admin-chat-message is-customer">
-                  <span className="admin-message-avatar">{selected.fullName.charAt(0).toLocaleUpperCase('vi')}</span>
-                  <div><strong>{selected.subject || 'Yêu cầu hỗ trợ'}</strong><p>{selected.content}</p><time>{formatDate(selected.createdAt)}</time></div>
-                </div>
-                {getReplies(selected).map((reply) => (
-                  <div className="admin-chat-message is-admin" key={reply.id}>
-                    <div><strong>Phản hồi hỗ trợ</strong><p>{reply.content}</p><small>{reply.sender} • {formatDate(reply.sentAt)}</small></div>
+                <div className="admin-conversation-date"><span>Lịch sử hội thoại</span></div>
+                {getThreadMessages(selected).map((reply) => (
+                  <div className={`admin-chat-message is-${reply.direction === 'CUSTOMER' ? 'customer' : 'admin'}`} key={reply.id}>
+                    {reply.direction === 'CUSTOMER' && <span className="admin-message-avatar">{selected.fullName.charAt(0).toLocaleUpperCase('vi')}</span>}
+                    <div><strong>{reply.direction === 'CUSTOMER' ? selected.fullName : 'Phản hồi hỗ trợ'}</strong><p>{reply.content}</p><small>{reply.sender} • {formatDate(reply.sentAt)}</small></div>
                   </div>
                 ))}
               </div>
 
               <footer className="admin-conversation-compose">
                 <label htmlFor="admin-message-note">Nội dung xử lý / phản hồi</label>
-                <textarea id="admin-message-note" rows={3} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Nhập nội dung đã tư vấn, lịch gọi lại hoặc kết quả xử lý..." />
+                <textarea id="admin-message-note" rows={3} value={note} onChange={(event) => setNote(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void update(selected, 'DANG_XU_LY', true) } }} placeholder="Nhập phản hồi cho khách hàng..." />
                 <div>
                   <span>Mỗi lần gửi sẽ được thêm vào lịch sử hội thoại.</span>
                   <button type="button" className="is-send" disabled={saving || !note.trim()} onClick={() => void update(selected, 'DANG_XU_LY', true)}>{saving ? 'Đang gửi...' : 'Gửi'}</button>
