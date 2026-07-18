@@ -250,6 +250,25 @@
   gap: 12px;
 }
 
+.google-signin-host {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.google-signin-error {
+  display: flex;
+  min-height: 43px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  color: #9c2831;
+  font-size: 12px;
+  text-align: center;
+}
+
 .social-login button {
   display: flex;
   align-items: center;
@@ -317,5 +336,28 @@
 
   .account-form input:not([type='checkbox']) {
     height: 46px;
+  }
+}
+
+@media (max-width: 380px) {
+  .account-page {
+    padding: 18px 10px 36px;
+  }
+
+  .account-form-wrap {
+    padding: 20px 14px 24px;
+  }
+
+  .account-options {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .forgot-button {
+    margin-left: auto;
+  }
+
+  .account-heading h1 {
+    font-size: 20px;
   }
 }
