@@ -102,7 +102,7 @@ function AdminSettingsPage() {
       setNotice({ message: 'Địa chỉ email chưa đúng định dạng', type: 'error' })
       return
     }
-    if (![settings.codEnabled, settings.bankTransferEnabled, settings.momoEnabled, settings.vnpayEnabled].some(Boolean)) {
+    if (![settings.codEnabled, settings.bankTransferEnabled].some(Boolean)) {
       setActiveSection('sales')
       setNotice({ message: 'Cần bật ít nhất một phương thức thanh toán', type: 'error' })
       return
@@ -207,7 +207,7 @@ function AdminSettingsPage() {
                 <label><span>Miễn phí giao hàng từ</span><div className="admin-setting-money-input"><input type="number" min="0" step="10000" disabled={!settings.freeShippingEnabled} value={settings.freeShippingThreshold} onChange={(event) => updateField('freeShippingThreshold', Number(event.target.value))} /><b>VNĐ</b></div><small>Hiện tại: {formatMoney(settings.freeShippingThreshold)}</small></label>
               </div>
               <div className="admin-settings-subsection"><h3>Chính sách vận chuyển</h3><SettingToggle checked={settings.freeShippingEnabled} onChange={(value) => updateField('freeShippingEnabled', value)} label="Tự động miễn phí vận chuyển" description={`Áp dụng khi giá trị đơn đạt ${formatMoney(settings.freeShippingThreshold)}.`} /></div>
-              <div className="admin-settings-subsection"><h3>Phương thức thanh toán</h3><div className="admin-settings-toggle-list"><SettingToggle checked={settings.codEnabled} onChange={(value) => updateField('codEnabled', value)} label="Thanh toán khi nhận hàng (COD)" description="Khách thanh toán trực tiếp cho đơn vị vận chuyển." /><SettingToggle checked={settings.bankTransferEnabled} onChange={(value) => updateField('bankTransferEnabled', value)} label="Chuyển khoản ngân hàng" description="Khách chuyển khoản trước khi cửa hàng giao hàng." /><SettingToggle checked={settings.momoEnabled} onChange={(value) => updateField('momoEnabled', value)} label="Ví điện tử MoMo" description="Cho phép lựa chọn MoMo tại trang thanh toán." /><SettingToggle checked={settings.vnpayEnabled} onChange={(value) => updateField('vnpayEnabled', value)} label="Cổng thanh toán VNPAY" description="Cho phép lựa chọn VNPAY tại trang thanh toán." /></div></div>
+              <div className="admin-settings-subsection"><h3>Phương thức thanh toán</h3><div className="admin-settings-toggle-list"><SettingToggle checked={settings.codEnabled} onChange={(value) => updateField('codEnabled', value)} label="Thanh toán khi nhận hàng (COD)" description="Khách thanh toán trực tiếp cho đơn vị vận chuyển." /><SettingToggle checked={settings.bankTransferEnabled} onChange={(value) => updateField('bankTransferEnabled', value)} label="Chuyển khoản ngân hàng (SePay)" description="Khách quét VietQR và hệ thống tự động xác nhận giao dịch." /></div></div>
             </div>
           ) : null}
 

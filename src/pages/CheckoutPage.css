@@ -490,6 +490,11 @@
   background: #90262e;
 }
 
+.place-order-submit-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 /* Responsive Styles */
 @media (max-width: 900px) {
   .checkout-grid {
