@@ -9,10 +9,21 @@ import Pagination from '../components/Pagination'
 import { usePagination } from '../hooks/usePagination'
 import './ProductsPage.css'
 
+function normalizeSearchText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('vi-VN')
+    .replace(/đ/g, 'd')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function ProductsPage() {
   const { categories, products, promotions } = useCatalog()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeCategorySlug = searchParams.get('danh-muc') || 'tat-ca'
+  const activeSearchTerm = searchParams.get('tu-khoa')?.replace(/\s+/g, ' ').trim() || ''
   const [sortBy, setSortBy] = useState('default')
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedPromo, setSelectedPromo] = useState<CatalogPromotion | null>(null)
@@ -28,10 +39,31 @@ function ProductsPage() {
   const activeCategory = categories.find((category) => category.slug === activeCategorySlug)
 
   const filteredProducts = useMemo(() => {
-    const result =
+    let result =
       activeCategorySlug === 'tat-ca'
         ? [...products]
         : products.filter((product) => product.categorySlug === activeCategorySlug)
+
+    const searchTokens = normalizeSearchText(activeSearchTerm).split(/[^a-z0-9]+/).filter(Boolean)
+    if (searchTokens.length > 0) {
+      result = result.filter((product) => {
+        const searchableText = normalizeSearchText([
+          product.name,
+          product.nameEn,
+          product.category,
+          product.description,
+          product.origin,
+          product.sku || '',
+          ...product.tags,
+          ...product.mainIngredients,
+        ].join(' '))
+        const searchableWords = searchableText.split(/[^a-z0-9]+/).filter(Boolean)
+
+        return searchTokens.every((token) => searchableWords.some((word) => (
+          token.length <= 2 ? word === token : word.startsWith(token)
+        )))
+      })
+    }
 
     switch (sortBy) {
       case 'price-asc':
@@ -49,14 +81,14 @@ function ProductsPage() {
     }
 
     return result
-  }, [activeCategorySlug, products, sortBy])
+  }, [activeCategorySlug, activeSearchTerm, products, sortBy])
 
   const {
     currentPage,
     totalPages,
     pageItems: paginatedProducts,
     setCurrentPage,
-  } = usePagination(filteredProducts, 6, `${activeCategorySlug}|${sortBy}`)
+  } = usePagination(filteredProducts, 6, `${activeCategorySlug}|${activeSearchTerm}|${sortBy}`)
 
   useEffect(() => {
     setContentState('loading')
@@ -68,11 +100,19 @@ function ProductsPage() {
   }, [loadVersion, products])
 
   const handleCategoryChange = (slug: string) => {
+    const nextParams = new URLSearchParams(searchParams)
     if (slug === 'tat-ca') {
-      setSearchParams({})
+      nextParams.delete('danh-muc')
     } else {
-      setSearchParams({ 'danh-muc': slug })
+      nextParams.set('danh-muc', slug)
     }
+    setSearchParams(nextParams)
+  }
+
+  const clearSearch = () => {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('tu-khoa')
+    setSearchParams(nextParams)
   }
 
   const closePromoModal = () => setSelectedPromo(null)
@@ -173,7 +213,7 @@ function ProductsPage() {
         <div className="products-container">
           <Link to="/">Trang chủ</Link>
           <span className="breadcrumb-sep">/</span>
-          <span>{activeCategory?.name || 'Tất cả sản phẩm'}</span>
+          <span>{activeSearchTerm ? 'Kết quả tìm kiếm' : activeCategory?.name || 'Tất cả sản phẩm'}</span>
         </div>
       </div>
 
@@ -263,7 +303,18 @@ function ProductsPage() {
 
         <section className="products-main">
           <div className="products-header">
-            <h1 className="products-title">{activeCategory?.name || 'Tất cả sản phẩm'}</h1>
+            <div className="products-heading-copy">
+              <h1 className="products-title">
+                {activeSearchTerm ? `Kết quả cho “${activeSearchTerm}”` : activeCategory?.name || 'Tất cả sản phẩm'}
+              </h1>
+              {activeSearchTerm && contentState === 'ready' && (
+                <p className="products-search-summary">
+                  Tìm thấy <strong>{filteredProducts.length}</strong> sản phẩm
+                  {activeCategorySlug !== 'tat-ca' && activeCategory ? ` trong ${activeCategory.name}` : ''}.
+                  <button type="button" onClick={clearSearch}>Xóa tìm kiếm</button>
+                </p>
+              )}
+            </div>
             <div className="products-sort">
               <label htmlFor="sort-select">Sắp xếp:</label>
               <select id="sort-select" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
@@ -361,11 +412,17 @@ function ProductsPage() {
 
           {contentState === 'ready' && filteredProducts.length === 0 && (
             <div className="products-empty">
-              <p>Không tìm thấy sản phẩm trong danh mục này.</p>
+              <strong>Không tìm thấy sản phẩm phù hợp</strong>
+              <p>
+                {activeSearchTerm
+                  ? `Không có sản phẩm nào khớp với “${activeSearchTerm}”. Hãy thử từ khóa ngắn hơn.`
+                  : 'Không tìm thấy sản phẩm trong danh mục này.'}
+              </p>
+              {activeSearchTerm && <button type="button" onClick={clearSearch}>Xem tất cả sản phẩm</button>}
             </div>
           )}
 
-          {contentState === 'ready' && (
+          {contentState === 'ready' && filteredProducts.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

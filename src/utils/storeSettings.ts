@@ -17,8 +17,6 @@ export interface StoreSettings {
   freeShippingEnabled: boolean
   codEnabled: boolean
   bankTransferEnabled: boolean
-  momoEnabled: boolean
-  vnpayEnabled: boolean
   notificationEmail: string
   notifyNewOrder: boolean
   notifyLowStock: boolean
@@ -52,8 +50,6 @@ export const defaultStoreSettings: StoreSettings = {
   freeShippingEnabled: true,
   codEnabled: true,
   bankTransferEnabled: true,
-  momoEnabled: true,
-  vnpayEnabled: true,
   notificationEmail: 'Hoangthingocmai2005@gmail.com',
   notifyNewOrder: true,
   notifyLowStock: true,

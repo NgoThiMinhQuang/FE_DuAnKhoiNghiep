@@ -12,6 +12,12 @@ interface LocationState {
   selectedIds?: string[]
 }
 
+interface CreateOrderResponse {
+  id: string
+  orderCode: string
+  paymentRequired: boolean
+}
+
 type AdministrativeUnit = {
   code: string
   name: string
@@ -25,14 +31,12 @@ type AddressApiResponse = {
 
 const ADDRESS_API_BASE = 'https://tinhthanhpho.com/api/v1'
 
-type CheckoutPaymentMethod = 'COD' | 'CHUYEN_KHOAN' | 'MOMO' | 'VNPAY'
+type CheckoutPaymentMethod = 'COD' | 'CHUYEN_KHOAN'
 
 const getPaymentOptions = (settings: StoreSettings) => {
   const options: Array<{ id: CheckoutPaymentMethod; title: string; desc: string; icon: string; enabled: boolean }> = [
     { id: 'COD', title: 'Thanh toán khi nhận hàng (COD)', desc: 'Thanh toán bằng tiền mặt trực tiếp cho shipper khi nhận được hàng.', icon: '💵', enabled: settings.codEnabled },
-    { id: 'CHUYEN_KHOAN', title: 'Chuyển khoản ngân hàng', desc: `Chuyển khoản trực tiếp tới số tài khoản ${settings.storeName} trước khi giao hàng.`, icon: '🏦', enabled: settings.bankTransferEnabled },
-    { id: 'MOMO', title: 'Ví điện tử MoMo', desc: 'Thanh toán trực tuyến an toàn, nhanh chóng qua ứng dụng Ví MoMo.', icon: '👛', enabled: settings.momoEnabled },
-    { id: 'VNPAY', title: 'Cổng thanh toán VNPAY', desc: 'Thanh toán qua tài khoản ngân hàng, ATM nội địa hoặc quét mã QR Code.', icon: '💳', enabled: settings.vnpayEnabled },
+    { id: 'CHUYEN_KHOAN', title: 'Chuyển khoản ngân hàng (SePay)', desc: `Quét mã VietQR và tự động xác nhận thanh toán cho ${settings.storeName}.`, icon: '🏦', enabled: settings.bankTransferEnabled },
   ]
   const enabledOptions = options.filter((option) => option.enabled)
   return enabledOptions.length ? enabledOptions : [options[0]]
@@ -65,6 +69,7 @@ function CheckoutPage() {
   const [useCustomAddress, setUseCustomAddress] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethod>(() => getPaymentOptions(storeSettings)[0].id)
   const [customerNote, setCustomerNote] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Voucher states
   const [voucherCode, setVoucherCode] = useState('')
@@ -246,8 +251,10 @@ function CheckoutPage() {
       return
     }
 
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
-      await api.post('/customers/me/orders', {
+      const order = await api.post<CreateOrderResponse>('/customers/me/orders', {
         productIds: selectedIds,
         addressId: !useCustomAddress ? selectedAddressId || undefined : undefined,
         recipientName: recipientName.trim(),
@@ -260,9 +267,15 @@ function CheckoutPage() {
       })
       const cartItems = getCartItems()
       saveCartItems(cartItems.filter((item) => !selectedIds.includes(item.productId)))
-      navigate('/tai-khoan/don-hang', { replace: true })
+      if (order.paymentRequired) {
+        navigate(`/thanh-toan/chuyen-khoan/${order.id}`, { replace: true })
+      } else {
+        navigate('/tai-khoan/don-hang', { replace: true })
+      }
     } catch (error) {
       setVoucherNotice({ message: error instanceof Error ? error.message : 'Không thể tạo đơn hàng.', type: 'error' })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -551,8 +564,8 @@ function CheckoutPage() {
                 </div>
               </section>
 
-              <button type="submit" className="place-order-submit-btn">
-                Xác nhận đặt hàng
+              <button type="submit" className="place-order-submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? 'Đang tạo đơn hàng...' : 'Xác nhận đặt hàng'}
               </button>
             </div>
           </div>

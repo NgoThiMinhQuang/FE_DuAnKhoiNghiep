@@ -415,6 +415,16 @@ function CustomerOrdersPage() {
                         <strong>{formatPrice(order.totalPayment)}</strong>
                       </div>
                       <div className="order-actions-buttons">
+                        {order.paymentMethod === 'CHUYEN_KHOAN'
+                          && order.paymentStatus === 'CHUA_THANH_TOAN'
+                          && order.orderStatus !== 'DA_HUY' && (
+                          <Link
+                            className="btn-primary order-action-link"
+                            to={`/thanh-toan/chuyen-khoan/${order.id}`}
+                          >
+                            Thanh toán
+                          </Link>
+                        )}
                         <button
                           type="button"
                           className="btn-secondary"
@@ -422,7 +432,7 @@ function CustomerOrdersPage() {
                         >
                           Chi tiết
                         </button>
-                        {order.orderStatus === 'CHO_XAC_NHAN' && (
+                        {order.orderStatus === 'CHO_XAC_NHAN' && order.paymentStatus === 'CHUA_THANH_TOAN' && (
                           <button
                             type="button"
                             className="btn-outline-danger"
@@ -674,7 +684,17 @@ function CustomerOrdersPage() {
             </div>
 
             <div className="order-modal-footer">
-              {selectedOrder.orderStatus === 'CHO_XAC_NHAN' && (
+              {selectedOrder.paymentMethod === 'CHUYEN_KHOAN'
+                && selectedOrder.paymentStatus === 'CHUA_THANH_TOAN'
+                && selectedOrder.orderStatus !== 'DA_HUY' && (
+                <Link
+                  className="btn-primary order-action-link"
+                  to={`/thanh-toan/chuyen-khoan/${selectedOrder.id}`}
+                >
+                  Thanh toán ngay
+                </Link>
+              )}
+              {selectedOrder.orderStatus === 'CHO_XAC_NHAN' && selectedOrder.paymentStatus === 'CHUA_THANH_TOAN' && (
                 <button
                   type="button"
                   className="btn-danger"

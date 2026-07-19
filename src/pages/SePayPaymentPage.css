@@ -1,0 +1,320 @@
+.sepay-page {
+  min-height: 70vh;
+  padding: 54px 20px 72px;
+  background: linear-gradient(180deg, #fff8f8 0%, #fff 72%);
+}
+
+.sepay-container {
+  width: min(960px, 100%);
+  margin: 0 auto;
+}
+
+.sepay-heading {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.sepay-heading > span {
+  color: #b53740;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.sepay-heading h1 {
+  margin: 8px 0 10px;
+  color: #351d20;
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.sepay-heading p {
+  max-width: 650px;
+  margin: 0 auto;
+  color: #776466;
+  line-height: 1.6;
+}
+
+.sepay-card {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  overflow: hidden;
+  border: 1px solid #efdcde;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(90, 30, 37, 0.1);
+}
+
+.sepay-card.paid {
+  border-color: #b9e5cf;
+}
+
+.sepay-qr-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 430px;
+  padding: 34px;
+  background: #fff7f7;
+}
+
+.sepay-card.paid .sepay-qr-column {
+  background: #f0fbf5;
+}
+
+.sepay-qr {
+  width: min(290px, 100%);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.sepay-success-icon {
+  display: grid;
+  place-items: center;
+  width: 138px;
+  height: 138px;
+  margin-bottom: 28px;
+  border-radius: 50%;
+  color: #fff;
+  background: #079455;
+  font-size: 76px;
+  box-shadow: 0 14px 30px rgba(7, 148, 85, 0.2);
+}
+
+.sepay-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.sepay-status.waiting {
+  color: #9a5b08;
+  background: #fff0c7;
+}
+
+.sepay-status.success {
+  color: #087443;
+  background: #d8f5e5;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: sepayPulse 1.5s infinite;
+}
+
+.sepay-status.success .status-dot {
+  animation: none;
+}
+
+@keyframes sepayPulse {
+  50% { opacity: 0.35; }
+}
+
+.sepay-qr-column small {
+  margin-top: 9px;
+  color: #927e80;
+}
+
+.sepay-details {
+  padding: 38px 42px;
+}
+
+.sepay-order-line,
+.sepay-amount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sepay-order-line {
+  color: #776466;
+  font-size: 14px;
+}
+
+.sepay-order-line strong {
+  color: #3b2527;
+}
+
+.sepay-amount {
+  margin: 20px 0 24px;
+  padding: 18px 0;
+  border-block: 1px dashed #ead8da;
+}
+
+.sepay-amount span {
+  color: #665153;
+  font-weight: 650;
+}
+
+.sepay-amount strong {
+  color: #b53740;
+  font-size: 25px;
+}
+
+.sepay-bank-info {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.sepay-bank-info > div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f4ebec;
+}
+
+.sepay-bank-info dt {
+  color: #8b7779;
+  font-size: 13px;
+}
+
+.sepay-bank-info dd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  color: #3b2527;
+  font-size: 14px;
+  text-align: right;
+  word-break: break-word;
+}
+
+.sepay-bank-info button {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border: 1px solid #e5ced0;
+  border-radius: 7px;
+  color: #a22e37;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payment-code-row strong {
+  color: #b53740;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+.sepay-warning {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border-left: 3px solid #d99820;
+  border-radius: 5px;
+  color: #76500f;
+  background: #fff8e8;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.sepay-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.sepay-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.sepay-primary-link {
+  color: #fff;
+  background: #b53740;
+}
+
+.sepay-secondary-link {
+  border: 1px solid #dfcdd0;
+  color: #6f5558;
+  background: #fff;
+}
+
+.sepay-loading,
+.sepay-error {
+  padding: 34px;
+  border-radius: 14px;
+  text-align: center;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(90, 30, 37, 0.08);
+}
+
+.sepay-error {
+  color: #b42318;
+  background: #fff4f3;
+}
+
+@media (max-width: 760px) {
+  .sepay-page {
+    padding: 32px 14px 50px;
+  }
+
+  .sepay-card {
+    grid-template-columns: 1fr;
+    border-radius: 16px;
+  }
+
+  .sepay-qr-column {
+    min-height: 0;
+    padding: 24px 20px;
+  }
+
+  .sepay-qr {
+    width: min(260px, 100%);
+  }
+
+  .sepay-details {
+    padding: 26px 20px 30px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sepay-heading h1 {
+    font-size: 26px;
+  }
+
+  .sepay-order-line,
+  .sepay-amount {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sepay-bank-info > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .sepay-bank-info dd {
+    text-align: left;
+  }
+
+  .sepay-actions {
+    flex-direction: column;
+  }
+
+  .sepay-actions a {
+    width: 100%;
+  }
+}

@@ -240,7 +240,7 @@ function ProductDetailPage() {
 
           <div className="payment-methods">
             <span>Phương thức thanh toán</span>
-            <div><b>VISA</b><b>Mastercard</b><b>JCB</b><b>VNPAY</b><b>COD</b></div>
+            <div><b>VietQR</b><b>SePay</b><b>COD</b></div>
           </div>
 
           <div className="product-commitments">
