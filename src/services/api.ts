@@ -17,11 +17,11 @@ export class ApiError extends Error {
   }
 }
 
-export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY)
+export const getAccessToken = () => sessionStorage.getItem(ACCESS_TOKEN_KEY)
 
 export const setAccessToken = (token: string | null) => {
-  if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token)
-  else localStorage.removeItem(ACCESS_TOKEN_KEY)
+  if (token) sessionStorage.setItem(ACCESS_TOKEN_KEY, token)
+  else sessionStorage.removeItem(ACCESS_TOKEN_KEY)
 }
 
 export const resolveApiUrl = (path: string) => {
@@ -50,7 +50,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   if (!response.ok || payload.success === false) {
     if (response.status === 401) {
       setAccessToken(null)
-      localStorage.removeItem('red-bean-beauty-auth-session')
+      sessionStorage.removeItem('red-bean-beauty-auth-session')
       window.dispatchEvent(new CustomEvent('auth-updated', { detail: null }))
     }
     throw new ApiError(payload.message || `Yêu cầu thất bại (${response.status})`, response.status)

@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useCatalog } from '../hooks/useCatalog'
-import { getCartCount, getCartItems, syncCartFromApi } from '../utils/cart'
-import { getWishlistIds, syncWishlistFromApi } from '../utils/wishlist'
+import { getCartCount, getCartItems, refreshCartScope, syncCartFromApi } from '../utils/cart'
+import { getWishlistIds, refreshWishlistScope, syncWishlistFromApi } from '../utils/wishlist'
 import { getCurrentUser, getUserDisplayName, getUserInitial, logoutDemo } from '../utils/auth'
 import { useStoreSettings } from '../utils/storeSettings'
 import './Header.css'
@@ -29,11 +29,17 @@ function Header() {
   const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(location.search).get('tu-khoa') || '')
 
   useEffect(() => {
-    const syncAuth = () => setAuthUser(getCurrentUser())
-    if (getCurrentUser()) {
-      void syncCartFromApi().catch(() => undefined)
-      void syncWishlistFromApi().catch(() => undefined)
+    const syncAuth = () => {
+      const nextUser = getCurrentUser()
+      setAuthUser(nextUser)
+      refreshCartScope()
+      refreshWishlistScope()
+      if (nextUser) {
+        void syncCartFromApi().catch(() => undefined)
+        void syncWishlistFromApi().catch(() => undefined)
+      }
     }
+    syncAuth()
     window.addEventListener('storage', syncAuth)
     window.addEventListener('auth-updated', syncAuth)
     return () => {
