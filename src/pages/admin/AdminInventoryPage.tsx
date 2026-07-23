@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
 import { formatPrice } from '../../data/products'
@@ -164,13 +164,13 @@ function AdminInventoryPage() {
         unitCost: Number(item.unitCost), total: Number(item.total),
       }))
       const imports = data.imports.map((item) => ({
-        id: String(item.id), code: String(item.code), type: 'in' as const,
+        id: `import-${String(item.id)}`, code: String(item.code), type: 'in' as const,
         movementType: 'NHAP_HANG' as const, status: item.status as VoucherStatus, createdAt: String(item.date),
         partner: String(item.supplierName || ''), note: String(item.note || ''), createdBy: String(item.createdBy || ''),
         items: mapItems(item.items), quantity: Number(item.quantity), total: Number(item.total),
       }))
       const exports = data.exports.map((item) => ({
-        id: String(item.id), code: String(item.code), type: 'out' as const,
+        id: `export-${String(item.id)}`, code: String(item.code), type: 'out' as const,
         movementType: item.type as Exclude<VoucherMovementType, 'NHAP_HANG'>,
         status: (['NHAP_TAM', 'DA_HOAN_THANH', 'DA_HUY'].includes(String(item.status)) ? item.status : 'NHAP_TAM') as VoucherStatus,
         orderCode: item.orderCode ? String(item.orderCode) : undefined,
@@ -406,7 +406,7 @@ function AdminInventoryPage() {
         </div>
 
         {activeView === 'stock' ? (
-          <>
+          <Fragment key="stock-view">
             <div className="admin-inventory-toolbar">
               <div>
                 <label><span>Danh mục</span><select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} aria-label="Lọc kho theo danh mục"><option value="all">Tất cả danh mục</option>{inventoryCategories.map(([slug, name]) => <option value={slug} key={slug}>{name}</option>)}</select></label>
@@ -420,14 +420,14 @@ function AdminInventoryPage() {
                 <thead><tr><th>Sản phẩm</th><th>Vị trí</th><th>Giá vốn</th><th>Tồn vật lý</th><th>Giữ chỗ</th><th>Khả dụng</th><th>Tồn tối thiểu</th><th>Trạng thái</th></tr></thead>
                 <tbody>{paginatedInventory.map((product) => {
                   const status = stockStatusMeta[getStockStatus(product)]
-                  return <tr key={product.id}>
+                  return <tr key={`stock-${product.id}`}>
                     <td><div className="admin-inventory-product"><img src={product.image} alt="" /><div><strong>{product.name}</strong><span>{product.sku} · {product.category}</span></div></div></td>
                     <td><div className="admin-inventory-location"><strong>{product.location}</strong><span>Kho chính</span></div></td>
                     <td>{formatPrice(product.costPrice)}</td>
-                    <td><strong className="admin-inventory-stock-number">{product.stock}</strong> {product.unit}</td>
-                    <td><strong>{product.reservedStock}</strong> {product.unit}</td>
-                    <td><strong className="admin-inventory-stock-number">{product.availableStock}</strong> {product.unit}</td>
-                    <td>{product.minimumStock} {product.unit}</td>
+                    <td><strong className="admin-inventory-stock-number">{product.stock}</strong></td>
+                    <td><strong>{product.reservedStock}</strong></td>
+                    <td><strong className="admin-inventory-stock-number">{product.availableStock}</strong></td>
+                    <td>{product.minimumStock}</td>
                     <td><span className={`admin-inventory-status is-${status.tone}`}><i />{status.label}</span></td>
                   </tr>
                 })}</tbody>
@@ -435,9 +435,9 @@ function AdminInventoryPage() {
               {filteredInventory.length === 0 ? <div className="admin-inventory-empty"><AdminIcon name="search" /><strong>Không tìm thấy sản phẩm</strong><span>Hãy thử từ khóa hoặc bộ lọc khác.</span></div> : null}
             </div>
             <Pagination currentPage={inventoryPage} totalPages={inventoryTotalPages} totalItems={filteredInventory.length} pageSize={6} itemLabel="sản phẩm" onPageChange={setInventoryPage} />
-          </>
+          </Fragment>
         ) : (
-          <>
+          <Fragment key="voucher-view">
             <div className="admin-inventory-toolbar">
               <div>
                 <label><span>Loại phiếu</span><select value={voucherTypeFilter} onChange={(event) => setVoucherTypeFilter(event.target.value as 'all' | VoucherType)} aria-label="Lọc loại phiếu kho"><option value="all">Tất cả phiếu</option><option value="in">Phiếu nhập</option><option value="out">Phiếu xuất</option></select></label>
@@ -470,7 +470,7 @@ function AdminInventoryPage() {
               {filteredVouchers.length === 0 ? <div className="admin-inventory-empty"><AdminIcon name="search" /><strong>Không tìm thấy phiếu kho</strong><span>Hãy thử từ khóa hoặc bộ lọc khác.</span></div> : null}
             </div>
             <Pagination currentPage={voucherPage} totalPages={voucherTotalPages} totalItems={filteredVouchers.length} pageSize={6} itemLabel="phiếu" onPageChange={setVoucherPage} />
-          </>
+          </Fragment>
         )}
       </section>
 
