@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from 'react'
 import AdminLayout, { AdminIcon } from '../../components/AdminLayout'
 import Pagination from '../../components/Pagination'
 import { formatPrice } from '../../data/products'
@@ -76,8 +76,33 @@ interface VoucherFormState {
   lines: VoucherLineForm[]
 }
 
+interface Supplier {
+  id: string
+  code: string
+  name: string
+  contactName?: string
+  phone?: string
+  email?: string
+  address?: string
+  note?: string
+  status?: 'HOAT_DONG' | 'NGUNG_HOP_TAC'
+}
+
+interface SupplierFormState {
+  name: string
+  contactName: string
+  phone: string
+  email: string
+  address: string
+  note: string
+  status: 'HOAT_DONG' | 'NGUNG_HOP_TAC'
+}
+
 const initialInventory: InventoryProduct[] = []
 const initialVouchers: StockVoucher[] = []
+const emptySupplierForm: SupplierFormState = {
+  name: '', contactName: '', phone: '', email: '', address: '', note: '', status: 'HOAT_DONG',
+}
 
 const stockStatusMeta: Record<StockStatus, { label: string; tone: string }> = {
   good: { label: 'Tồn ổn định', tone: 'good' },
@@ -135,9 +160,12 @@ function AdminInventoryPage() {
   const [voucherPeriod, setVoucherPeriod] = useState<VoucherPeriod>('all')
   const [voucherSort, setVoucherSort] = useState<VoucherSort>('newest')
   const [isVoucherFormOpen, setIsVoucherFormOpen] = useState(false)
+  const [isSupplierFormOpen, setIsSupplierFormOpen] = useState(false)
+  const [isSupplierSaving, setIsSupplierSaving] = useState(false)
   const [selectedVoucher, setSelectedVoucher] = useState<StockVoucher | null>(null)
   const [notice, setNotice] = useState('')
-  const [suppliers, setSuppliers] = useState<Array<{ id: string; code: string; name: string; status?: string }>>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [supplierForm, setSupplierForm] = useState<SupplierFormState>(emptySupplierForm)
   const [voucherForm, setVoucherForm] = useState<VoucherFormState>(() => ({
     type: 'in', exportType: 'XUAT_KHAC', date: toDateInput(), supplierId: '', partner: '', note: '', lines: [],
   }))
@@ -145,7 +173,7 @@ function AdminInventoryPage() {
   const loadInventory = async () => {
     try {
       const data = await api.get<{
-        products: Array<Record<string, any>>; suppliers: Array<{ id: string; code: string; name: string; status?: string }>
+        products: Array<Record<string, any>>; suppliers: Supplier[]
         imports: Array<Record<string, any>>; exports: Array<Record<string, any>>
       }>('/admin/inventory')
       setInventory(data.products.map((item) => ({
@@ -164,13 +192,13 @@ function AdminInventoryPage() {
         unitCost: Number(item.unitCost), total: Number(item.total),
       }))
       const imports = data.imports.map((item) => ({
-        id: String(item.id), code: String(item.code), type: 'in' as const,
+        id: `import-${String(item.id)}`, code: String(item.code), type: 'in' as const,
         movementType: 'NHAP_HANG' as const, status: item.status as VoucherStatus, createdAt: String(item.date),
         partner: String(item.supplierName || ''), note: String(item.note || ''), createdBy: String(item.createdBy || ''),
         items: mapItems(item.items), quantity: Number(item.quantity), total: Number(item.total),
       }))
       const exports = data.exports.map((item) => ({
-        id: String(item.id), code: String(item.code), type: 'out' as const,
+        id: `export-${String(item.id)}`, code: String(item.code), type: 'out' as const,
         movementType: item.type as Exclude<VoucherMovementType, 'NHAP_HANG'>,
         status: (['NHAP_TAM', 'DA_HOAN_THANH', 'DA_HUY'].includes(String(item.status)) ? item.status : 'NHAP_TAM') as VoucherStatus,
         orderCode: item.orderCode ? String(item.orderCode) : undefined,
@@ -194,9 +222,13 @@ function AdminInventoryPage() {
   }, [notice])
 
   useEffect(() => {
-    if (!isVoucherFormOpen && !selectedVoucher) return
+    if (!isVoucherFormOpen && !isSupplierFormOpen && !selectedVoucher) return
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (isSupplierFormOpen) {
+          setIsSupplierFormOpen(false)
+          return
+        }
         setIsVoucherFormOpen(false)
         setSelectedVoucher(null)
       }
@@ -207,7 +239,7 @@ function AdminInventoryPage() {
       document.body.style.overflow = ''
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isVoucherFormOpen, selectedVoucher])
+  }, [isSupplierFormOpen, isVoucherFormOpen, selectedVoucher])
 
   const filteredInventory = useMemo(() => {
     const keyword = searchValue.trim().toLocaleLowerCase('vi-VN')
@@ -312,6 +344,39 @@ function AdminInventoryPage() {
     setVoucherForm((current) => ({ ...current, lines: current.lines.filter((line) => line.id !== lineId) }))
   }
 
+  const openSupplierForm = () => {
+    setSupplierForm(emptySupplierForm)
+    setIsSupplierFormOpen(true)
+  }
+
+  const handleSupplierSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsSupplierSaving(true)
+    try {
+      const created = await api.post<{ id: string }>('/admin/suppliers', {
+        name: supplierForm.name.trim(),
+        contactName: supplierForm.contactName.trim() || null,
+        phone: supplierForm.phone.trim() || null,
+        email: supplierForm.email.trim() || null,
+        address: supplierForm.address.trim() || null,
+        note: supplierForm.note.trim() || null,
+        status: supplierForm.status,
+      })
+      await loadInventory()
+      if (supplierForm.status === 'HOAT_DONG') {
+        setVoucherForm((current) => ({ ...current, supplierId: created.id }))
+      }
+      setIsSupplierFormOpen(false)
+      setNotice(supplierForm.status === 'HOAT_DONG'
+        ? `Đã thêm và chọn nhà cung cấp ${supplierForm.name.trim()}`
+        : `Đã thêm nhà cung cấp ${supplierForm.name.trim()} ở trạng thái ngừng hợp tác`)
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Không thể tạo nhà cung cấp')
+    } finally {
+      setIsSupplierSaving(false)
+    }
+  }
+
   const handleVoucherSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!voucherForm.lines.length) {
@@ -406,7 +471,7 @@ function AdminInventoryPage() {
         </div>
 
         {activeView === 'stock' ? (
-          <>
+          <Fragment key="stock-view">
             <div className="admin-inventory-toolbar">
               <div>
                 <label><span>Danh mục</span><select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} aria-label="Lọc kho theo danh mục"><option value="all">Tất cả danh mục</option>{inventoryCategories.map(([slug, name]) => <option value={slug} key={slug}>{name}</option>)}</select></label>
@@ -420,14 +485,14 @@ function AdminInventoryPage() {
                 <thead><tr><th>Sản phẩm</th><th>Vị trí</th><th>Giá vốn</th><th>Tồn vật lý</th><th>Giữ chỗ</th><th>Khả dụng</th><th>Tồn tối thiểu</th><th>Trạng thái</th></tr></thead>
                 <tbody>{paginatedInventory.map((product) => {
                   const status = stockStatusMeta[getStockStatus(product)]
-                  return <tr key={product.id}>
+                  return <tr key={`stock-${product.id}`}>
                     <td><div className="admin-inventory-product"><img src={product.image} alt="" /><div><strong>{product.name}</strong><span>{product.sku} · {product.category}</span></div></div></td>
                     <td><div className="admin-inventory-location"><strong>{product.location}</strong><span>Kho chính</span></div></td>
                     <td>{formatPrice(product.costPrice)}</td>
-                    <td><strong className="admin-inventory-stock-number">{product.stock}</strong> {product.unit}</td>
-                    <td><strong>{product.reservedStock}</strong> {product.unit}</td>
-                    <td><strong className="admin-inventory-stock-number">{product.availableStock}</strong> {product.unit}</td>
-                    <td>{product.minimumStock} {product.unit}</td>
+                    <td><strong className="admin-inventory-stock-number">{product.stock}</strong></td>
+                    <td><strong>{product.reservedStock}</strong></td>
+                    <td><strong className="admin-inventory-stock-number">{product.availableStock}</strong></td>
+                    <td>{product.minimumStock}</td>
                     <td><span className={`admin-inventory-status is-${status.tone}`}><i />{status.label}</span></td>
                   </tr>
                 })}</tbody>
@@ -435,9 +500,9 @@ function AdminInventoryPage() {
               {filteredInventory.length === 0 ? <div className="admin-inventory-empty"><AdminIcon name="search" /><strong>Không tìm thấy sản phẩm</strong><span>Hãy thử từ khóa hoặc bộ lọc khác.</span></div> : null}
             </div>
             <Pagination currentPage={inventoryPage} totalPages={inventoryTotalPages} totalItems={filteredInventory.length} pageSize={6} itemLabel="sản phẩm" onPageChange={setInventoryPage} />
-          </>
+          </Fragment>
         ) : (
-          <>
+          <Fragment key="voucher-view">
             <div className="admin-inventory-toolbar">
               <div>
                 <label><span>Loại phiếu</span><select value={voucherTypeFilter} onChange={(event) => setVoucherTypeFilter(event.target.value as 'all' | VoucherType)} aria-label="Lọc loại phiếu kho"><option value="all">Tất cả phiếu</option><option value="in">Phiếu nhập</option><option value="out">Phiếu xuất</option></select></label>
@@ -470,7 +535,7 @@ function AdminInventoryPage() {
               {filteredVouchers.length === 0 ? <div className="admin-inventory-empty"><AdminIcon name="search" /><strong>Không tìm thấy phiếu kho</strong><span>Hãy thử từ khóa hoặc bộ lọc khác.</span></div> : null}
             </div>
             <Pagination currentPage={voucherPage} totalPages={voucherTotalPages} totalItems={filteredVouchers.length} pageSize={6} itemLabel="phiếu" onPageChange={setVoucherPage} />
-          </>
+          </Fragment>
         )}
       </section>
 
@@ -482,7 +547,7 @@ function AdminInventoryPage() {
               <div className="admin-inventory-voucher-form-head">
                 <div className="admin-inventory-type-switch"><button type="button" className={voucherForm.type === 'in' ? 'is-active' : ''} onClick={() => setVoucherForm((current) => ({ ...current, type: 'in', supplierId: current.supplierId || suppliers.find((supplier) => supplier.status !== 'NGUNG_HOP_TAC')?.id || '' }))}>Phiếu nhập</button><button type="button" className={voucherForm.type === 'out' ? 'is-active' : ''} onClick={() => setVoucherForm((current) => ({ ...current, type: 'out' }))}>Phiếu xuất ngoài bán hàng</button></div>
                 <label><span>Ngày lập phiếu *</span><input type="date" required value={voucherForm.date} onChange={(event) => setVoucherForm((current) => ({ ...current, date: event.target.value }))} /></label>
-                {voucherForm.type === 'in' ? <label><span>Nhà cung cấp *</span><select required value={voucherForm.supplierId} onChange={(event) => setVoucherForm((current) => ({ ...current, supplierId: event.target.value }))}><option value="" disabled>Chọn nhà cung cấp</option>{suppliers.filter((supplier) => supplier.status !== 'NGUNG_HOP_TAC').map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.code} - {supplier.name}</option>)}</select></label> : <label><span>Loại xuất *</span><select value={voucherForm.exportType} onChange={(event) => setVoucherForm((current) => ({ ...current, exportType: event.target.value as ManualExportType }))}><option value="XUAT_HUY">Xuất hủy hàng lỗi / hết hạn</option><option value="XUAT_KHAC">Xuất dùng nội bộ / mục đích khác</option></select></label>}
+                {voucherForm.type === 'in' ? <div className="admin-inventory-supplier-field"><label><span>Nhà cung cấp *</span><select required value={voucherForm.supplierId} onChange={(event) => setVoucherForm((current) => ({ ...current, supplierId: event.target.value }))}><option value="" disabled>Chọn nhà cung cấp</option>{suppliers.filter((supplier) => supplier.status !== 'NGUNG_HOP_TAC').map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.code} - {supplier.name}</option>)}</select></label><button type="button" onClick={openSupplierForm}><AdminIcon name="plus" />Thêm nhanh nhà cung cấp</button></div> : <label><span>Loại xuất *</span><select value={voucherForm.exportType} onChange={(event) => setVoucherForm((current) => ({ ...current, exportType: event.target.value as ManualExportType }))}><option value="XUAT_HUY">Xuất hủy hàng lỗi / hết hạn</option><option value="XUAT_KHAC">Xuất dùng nội bộ / mục đích khác</option></select></label>}
                 {voucherForm.type === 'out' ? <label className="is-wide"><span>Bộ phận hoặc nơi nhận *</span><input required value={voucherForm.partner} placeholder="Ví dụ: Bộ phận kiểm nghiệm, kho hủy" onChange={(event) => setVoucherForm((current) => ({ ...current, partner: event.target.value }))} /></label> : null}
                 <label className="is-wide"><span>{voucherForm.type === 'out' ? 'Lý do xuất kho *' : 'Ghi chú'}</span><input required={voucherForm.type === 'out'} value={voucherForm.note} placeholder={voucherForm.type === 'out' ? 'Nhập lý do cụ thể để lưu lịch sử kho' : 'Nội dung bổ sung cho phiếu nhập'} onChange={(event) => setVoucherForm((current) => ({ ...current, note: event.target.value }))} /></label>
               </div>
@@ -500,6 +565,26 @@ function AdminInventoryPage() {
                 })}</div>
               </section>
               <footer><div><span>Tổng số lượng</span><strong>{voucherForm.lines.reduce((total, line) => total + (Number(line.quantity) || 0), 0)} sản phẩm</strong></div><button type="button" className="admin-inventory-cancel-button" onClick={() => setIsVoucherFormOpen(false)}>Hủy</button><button type="submit" className="admin-inventory-save-button">Lưu và cập nhật kho</button></footer>
+            </form>
+          </section>
+        </div>
+      ) : null}
+
+      {isSupplierFormOpen ? (
+        <div className="admin-inventory-modal-backdrop admin-inventory-supplier-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setIsSupplierFormOpen(false)}>
+          <section className="admin-inventory-supplier-modal" role="dialog" aria-modal="true" aria-labelledby="inventory-supplier-form-title">
+            <header><div><span>NHÀ CUNG CẤP</span><h2 id="inventory-supplier-form-title">Thêm nhanh nhà cung cấp</h2><small>Mã nhà cung cấp được tạo tự động</small></div><button type="button" onClick={() => setIsSupplierFormOpen(false)} aria-label="Đóng"><AdminIcon name="close" /></button></header>
+            <form onSubmit={handleSupplierSubmit}>
+              <div className="admin-inventory-supplier-grid">
+                <label className="is-wide"><span>Tên nhà cung cấp *</span><input required maxLength={200} value={supplierForm.name} onChange={(event) => setSupplierForm((current) => ({ ...current, name: event.target.value }))} /></label>
+                <label><span>Người liên hệ</span><input maxLength={150} value={supplierForm.contactName} onChange={(event) => setSupplierForm((current) => ({ ...current, contactName: event.target.value }))} /></label>
+                <label><span>Số điện thoại</span><input type="tel" maxLength={20} value={supplierForm.phone} onChange={(event) => setSupplierForm((current) => ({ ...current, phone: event.target.value }))} /></label>
+                <label><span>Email</span><input type="email" maxLength={150} value={supplierForm.email} onChange={(event) => setSupplierForm((current) => ({ ...current, email: event.target.value }))} /></label>
+                <label><span>Trạng thái</span><select value={supplierForm.status} onChange={(event) => setSupplierForm((current) => ({ ...current, status: event.target.value as SupplierFormState['status'] }))}><option value="HOAT_DONG">Đang hợp tác</option><option value="NGUNG_HOP_TAC">Ngừng hợp tác</option></select></label>
+                <label className="is-wide"><span>Địa chỉ</span><input maxLength={500} value={supplierForm.address} onChange={(event) => setSupplierForm((current) => ({ ...current, address: event.target.value }))} /></label>
+                <label className="is-wide"><span>Ghi chú</span><textarea rows={3} value={supplierForm.note} onChange={(event) => setSupplierForm((current) => ({ ...current, note: event.target.value }))} /></label>
+              </div>
+              <footer><button type="button" className="admin-inventory-cancel-button" onClick={() => setIsSupplierFormOpen(false)}>Hủy</button><button type="submit" className="admin-inventory-save-button" disabled={isSupplierSaving}>{isSupplierSaving ? 'Đang lưu...' : 'Lưu nhà cung cấp'}</button></footer>
             </form>
           </section>
         </div>
