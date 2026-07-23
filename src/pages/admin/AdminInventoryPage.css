@@ -239,7 +239,7 @@
 }
 
 .admin-inventory-voucher-table {
-  min-width: 1080px;
+  min-width: 1220px;
 }
 
 .admin-inventory-stock-table th,
@@ -344,7 +344,8 @@
 }
 
 .admin-inventory-status,
-.admin-inventory-voucher-type {
+.admin-inventory-voucher-type,
+.admin-inventory-voucher-status {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -362,11 +363,23 @@
   background: currentColor;
 }
 
+.admin-inventory-voucher-status i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .admin-inventory-status.is-good { background: #e5f4ec; color: #177950; }
 .admin-inventory-status.is-low { background: #fff0dc; color: #a85a10; }
 .admin-inventory-status.is-out { background: #f8e5e7; color: #a52d36; }
 .admin-inventory-voucher-type.is-in { background: #e5f4ec; color: #177950; }
-.admin-inventory-voucher-type.is-out { background: #f8e5e7; color: #a52d36; }
+.admin-inventory-voucher-type.is-sale { background: #e8eff9; color: #356da5; }
+.admin-inventory-voucher-type.is-waste { background: #f8e5e7; color: #a52d36; }
+.admin-inventory-voucher-type.is-other { background: #f2eded; color: #665b5c; }
+.admin-inventory-voucher-status.is-completed { background: #e5f4ec; color: #177950; }
+.admin-inventory-voucher-status.is-draft { background: #fff0dc; color: #a85a10; }
+.admin-inventory-voucher-status.is-cancelled { background: #f2eded; color: #827677; }
 
 .admin-inventory-view-button {
   display: grid;
@@ -539,6 +552,7 @@
 }
 
 .admin-inventory-voucher-form-head input,
+.admin-inventory-voucher-form-head select,
 .admin-inventory-voucher-lines input,
 .admin-inventory-voucher-lines select {
   width: 100%;
@@ -553,6 +567,7 @@
 }
 
 .admin-inventory-voucher-form-head input:focus,
+.admin-inventory-voucher-form-head select:focus,
 .admin-inventory-voucher-lines input:focus,
 .admin-inventory-voucher-lines select:focus {
   border-color: #cf9297;
